@@ -1,18 +1,395 @@
-# See https://www.dartlang.org/guides/libraries/private-files
+# ================================================
+# KhataBook Clone - Comprehensive .gitignore
+# ================================================
 
-# Files and directories created by pub
-.dart_tool/
-.packages
-build/
-# If you're building an application, you may want to check-in your pubspec.lock
-pubspec.lock
+# ================================
+# Flutter & Dart Specific
+# ================================
 
-# Directory created by dartdoc
-# If you don't generate documentation locally you can remove this line.
-doc/api/
+# Build outputs
+/frontend/build/
+/frontend/.dart_tool/
+/frontend/.flutter-plugins
+/frontend/.flutter-plugins-dependencies
+/frontend/.packages
+/frontend/.pub-cache/
+/frontend/.pub/
+/frontend/pubspec.lock
 
-# dotenv environment variables file
+# Generated files
+/frontend/ios/Flutter/Generated.xcconfig
+/frontend/ios/Flutter/flutter_export_environment.sh
+/frontend/ios/Flutter/app.flx
+/frontend/ios/Flutter/app.zip
+/frontend/ios/Flutter/flutter_assets/
+/frontend/ios/ServiceDefinitions.json
+/frontend/ios/Runner/GeneratedPluginRegistrant.*
+
+# Android generated files
+/frontend/android/.gradle
+/frontend/android/captures/
+/frontend/android/gradle.properties
+/frontend/android/gradlew
+/frontend/android/gradlew.bat
+/frontend/android/key.properties
+/frontend/android/local.properties
+/frontend/android/**/GeneratedPluginRegistrant.java
+/frontend/android/app/debug
+/frontend/android/app/profile
+/frontend/android/app/release
+
+# iOS generated files
+/frontend/ios/Flutter/flutter_export_environment.sh
+/frontend/ios/Pods/
+/frontend/ios/.symlinks/
+/frontend/ios/Runner.xcworkspace
+
+# Web generated files
+/frontend/web/assets/assets/
+/frontend/web/assets/fonts/
+/frontend/web/assets/packages/
+
+# Coverage reports
+/frontend/coverage/
+/frontend/test/coverage.json
+/frontend/test/.test_coverage.dart
+
+# IDE generated files
+/frontend/.vscode/
+/frontend/.idea/
+/frontend/*.iml
+/frontend/*.ipr
+/frontend/*.iws
+
+# Flutter/Dart specific artifacts
+**/.dart_tool/
+**/.packages
+**/build/
+.metadata
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# ================================
+# PHP & Backend Specific
+# ================================
+
+# Composer dependencies
+/backend/vendor/
+/backend/composer.lock
+
+# Environment files
+/backend/.env
+/backend/.env.local
+/backend/.env.production
+/backend/.env.staging
+
+# Log files
+/backend/logs/
+/backend/*.log
+/backend/error.log
+/backend/access.log
+
+# Cache files
+/backend/cache/
+/backend/storage/cache/
+/backend/storage/temp/
+/backend/storage/sessions/
+
+# File uploads
+/backend/storage/uploads/*
+!/backend/storage/uploads/.gitkeep
+/backend/uploads/
+/backend/public/uploads/
+
+# PHPUnit test results
+/backend/.phpunit.result.cache
+/backend/tests/coverage/
+/backend/coverage.xml
+/backend/coverage.clover
+
+# PHP Storm
+/backend/.idea/
+/backend/*.iml
+
+# VS Code
+/backend/.vscode/
+
+# Temporary files
+/backend/tmp/
+/backend/temp/
+
+# ================================
+# Database Specific
+# ================================
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+*.sql.backup
+
+# MySQL dumps
+*.sql.gz
+*.sql.bz2
+
+# Database logs
+mysql-bin.*
+mysql-slow.log
+
+# ================================
+# System & IDE Files
+# ================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ================================
+# Development Tools
+# ================================
+
+# Git
+.git/
+.gitattributes
+
+# SVN
+.svn/
+
+# Mercurial
+.hg/
+.hgignore
+.hgsub
+.hgsubstate
+
+# Bazaar
+.bzr/
+.bzrignore
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.swp
+*.swo
+*~
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+.sublimets
+
+# Atom
+.atom/
+
+# Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+.target
+.cache-main
+.scala_dependencies
+.worksheet
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ================================
+# Build & Deployment
+# ================================
+
+# Node.js (if using for build tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Docker
+.dockerignore
+
+# Vagrant
+.vagrant/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# ================================
+# Security & Credentials
+# ================================
+
+# SSH keys
+*.pem
+*.key
+*.crt
+*.csr
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+
+# Environment variables
 .env*
+!.env.example
+.envrc
+
+# API keys and secrets
+secrets.json
+secrets.yaml
+.secrets/
+
+# Certificates
+*.p12
+*.pfx
+*.crt
+*.pem
+
+# ================================
+# Documentation & Assets
+# ================================
+
+# Generated documentation
+/docs/build/
+/docs/_build/
+/docs/site/
+
+# Asset processing
+/assets/processed/
+/assets/compiled/
+
+# ================================
+# Testing & Analysis
+# ================================
+
+# Test reports
+/test-results/
+/allure-results/
+/reports/
+
+# Code analysis
+/.scannerwork/
+/sonar-project.properties
+
+# Performance profiling
+*.prof
+*.trace
+
+# ================================
+# Backup & Archive Files
+# ================================
+
+# Backup files
+*.backup
+*.bak
+*.orig
+*.save
+*.swp
+*.tmp
+
+# Archive files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# ================================
+# Local Development
+# ================================
+
+# Local development overrides
+docker-compose.override.yml
+.env.local
+
+# Personal notes
+TODO.md
+NOTES.md
+PERSONAL.md
+
+# Scratch files
+scratch.*
+temp.*
+test.*
+
+# ================================
+# Package Managers
+# ================================
+
+# Pub (Dart/Flutter)
+.pub/
+.pub-cache/
+
+# NPM/Yarn
+package-lock.json
+yarn.lock
+
+# Composer (PHP)
+composer.phar
+
+# ================================
+# Generated JavaScript Files
+# ================================
 
 # Avoid committing generated Javascript files:
 *.dart.js
@@ -23,5 +400,9 @@ doc/api/
 *.js.deps
 *.js.map
 
-.flutter-plugins
-.flutter-plugins-dependencies
+# Directory created by dartdoc
+doc/api/
+
+# ================================
+# End of .gitignore
+# ================================
