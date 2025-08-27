@@ -23,7 +23,14 @@ $request_method = $_SERVER['REQUEST_METHOD'];
 $uri_parts = explode('?', $request_uri);
 $path = $uri_parts[0];
 
-// Remove the base path (assuming the API is at /api/)
+// Only process API routes - if not starting with /api/, return 404
+if (strpos($path, '/api') !== 0) {
+    http_response_code(404);
+    echo json_encode(['success' => false, 'message' => 'API endpoint not found']);
+    exit;
+}
+
+// Remove the base path (/api/)
 $path = str_replace('/api', '', $path);
 
 // Split the path into segments
