@@ -34,9 +34,10 @@ CREATE INDEX idx_users_phone ON users(phone);
 CREATE INDEX idx_users_email ON users(email);
 
 -- Insert sample data (optional)
-INSERT INTO users (name, phone, email, address) VALUES
-('John Doe', '+1234567890', 'john@example.com', '123 Main St'),
-('Jane Smith', '+0987654321', 'jane@example.com', '456 Oak Ave');
+-- For sample users include a simple hashed password (SHA2) to avoid NOT NULL constraint errors
+INSERT INTO users (name, phone, email, password, address) VALUES
+('John Doe', '+1234567890', 'john@example.com', SHA2('password123',256), '123 Main St'),
+('Jane Smith', '+0987654321', 'jane@example.com', SHA2('password123',256), '456 Oak Ave');
 
 INSERT INTO transactions (user_id, type, amount, description, date) VALUES
 (1, 'credit', 100.00, 'Payment received', '2024-01-15 10:00:00'),
