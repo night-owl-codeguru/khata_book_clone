@@ -1355,16 +1355,13 @@ dev_dependencies:
    }
    ```
 
-3. **Database Connection Issues**
+3. **Port Already in Use**
    ```bash
-   # Check MySQL service
-   sudo systemctl status mysql
+   # Find process using port 8080
+   lsof -i :8080
    
-   # Restart MySQL
-   sudo systemctl restart mysql
-   
-   # Check connection
-   mysql -u username -p -e "SELECT 1;"
+   # Kill the process
+   kill -9 <PID>
    ```
 
 #### **Frontend Issues**
