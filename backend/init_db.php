@@ -14,8 +14,19 @@ try {
 
     foreach ($statements as $statement) {
         if (!empty($statement)) {
-            $pdo->exec($statement);
-            echo "✓ Executed: " . substr($statement, 0, 50) . "...\n";
+            try {
+                $pdo->exec($statement);
+                echo "✓ Executed: " . substr($statement, 0, 50) . "...\n";
+            } catch (PDOException $e) {
+                $sqlErrNo = isset($e->errorInfo[1]) ? $e->errorInfo[1] : null;
+                // MySQL error 1061 = Duplicate key name
+                if ($sqlErrNo == 1061 || stripos($e->getMessage(), 'Duplicate key name') !== false) {
+                    echo "⚠️  Skipped (duplicate key/index): " . substr($statement, 0, 80) . "...\n";
+                    continue;
+                }
+                // For other errors, rethrow so deployment logs the failure
+                throw $e;
+            }
         }
     }
 
