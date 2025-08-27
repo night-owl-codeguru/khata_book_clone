@@ -1,179 +1,93 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
+require_once '../config/database.php';
 
 class Transaction {
-    private $db;
-    
+    private $pdo;
+
     public function __construct() {
-        $this->db = Database::getInstance();
+        global $pdo;
+        $this->pdo = $pdo;
     }
-    
-    public function create($data) {
-        $data['created_at'] = date('Y-m-d H:i:s');
-        $data['updated_at'] = date('Y-m-d H:i:s');
-        
-        return $this->db->insert('transactions', $data);
+
+    // Create a new transaction
+    public function create($user_id, $type, $amount, $description = null, $date = null) {
+        $date = $date ?: date('Y-m-d H:i:s');
+        $sql = "INSERT INTO transactions (user_id, type, amount, description, date, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$user_id, $type, $amount, $description, $date]);
     }
-    
-    public function findById($id, $userId) {
-        $sql = '
-            SELECT t.*, c.name as customer_name 
-            FROM transactions t
-            JOIN customers c ON t.customer_id = c.id
-            WHERE t.id = ? AND t.user_id = ?
-        ';
-        
-        return $this->db->fetch($sql, [$id, $userId]);
+
+    // Get all transactions for a user
+    public function getByUserId($user_id) {
+        $sql = "SELECT * FROM transactions WHERE user_id = ? ORDER BY date DESC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$user_id]);
+        return $stmt->fetchAll();
     }
-    
-    public function findByUserId($userId, $filters = []) {
-        $page = $filters['page'] ?? 1;
-        $limit = $filters['limit'] ?? 20;
-        $customerId = $filters['customer_id'] ?? null;
-        $type = $filters['type'] ?? null;
-        $startDate = $filters['start_date'] ?? null;
-        $endDate = $filters['end_date'] ?? null;
-        $search = $filters['search'] ?? '';
-        
-        $offset = ($page - 1) * $limit;
-        
-        $sql = '
-            SELECT t.*, c.name as customer_name 
-            FROM transactions t
-            JOIN customers c ON t.customer_id = c.id
-            WHERE t.user_id = ?
-        ';
-        $params = [$userId];
-        
-        if ($customerId) {
-            $sql .= ' AND t.customer_id = ?';
-            $params[] = $customerId;
+
+    // Get all transactions
+    public function getAll($limit = null, $offset = 0) {
+        $sql = "SELECT t.*, u.name as user_name FROM transactions t
+                JOIN users u ON t.user_id = u.id
+                ORDER BY t.date DESC";
+        if ($limit) {
+            $sql .= " LIMIT ? OFFSET ?";
         }
-        
-        if ($type) {
-            $sql .= ' AND t.type = ?';
-            $params[] = $type;
+        $stmt = $this->pdo->prepare($sql);
+        if ($limit) {
+            $stmt->execute([$limit, $offset]);
+        } else {
+            $stmt->execute();
         }
-        
-        if ($startDate) {
-            $sql .= ' AND DATE(t.date) >= ?';
-            $params[] = $startDate;
-        }
-        
-        if ($endDate) {
-            $sql .= ' AND DATE(t.date) <= ?';
-            $params[] = $endDate;
-        }
-        
-        if (!empty($search)) {
-            $sql .= ' AND (t.description LIKE ? OR c.name LIKE ?)';
-            $searchTerm = "%$search%";
-            $params[] = $searchTerm;
-            $params[] = $searchTerm;
-        }
-        
-        $sql .= ' ORDER BY t.date DESC, t.created_at DESC LIMIT ? OFFSET ?';
-        $params[] = $limit;
-        $params[] = $offset;
-        
-        return $this->db->fetchAll($sql, $params);
+        return $stmt->fetchAll();
     }
-    
-    public function getCount($userId, $filters = []) {
-        $customerId = $filters['customer_id'] ?? null;
-        $type = $filters['type'] ?? null;
-        $startDate = $filters['start_date'] ?? null;
-        $endDate = $filters['end_date'] ?? null;
-        $search = $filters['search'] ?? '';
-        
-        $sql = '
-            SELECT COUNT(*) as count 
-            FROM transactions t
-            JOIN customers c ON t.customer_id = c.id
-            WHERE t.user_id = ?
-        ';
-        $params = [$userId];
-        
-        if ($customerId) {
-            $sql .= ' AND t.customer_id = ?';
-            $params[] = $customerId;
-        }
-        
-        if ($type) {
-            $sql .= ' AND t.type = ?';
-            $params[] = $type;
-        }
-        
-        if ($startDate) {
-            $sql .= ' AND DATE(t.date) >= ?';
-            $params[] = $startDate;
-        }
-        
-        if ($endDate) {
-            $sql .= ' AND DATE(t.date) <= ?';
-            $params[] = $endDate;
-        }
-        
-        if (!empty($search)) {
-            $sql .= ' AND (t.description LIKE ? OR c.name LIKE ?)';
-            $searchTerm = "%$search%";
-            $params[] = $searchTerm;
-            $params[] = $searchTerm;
-        }
-        
-        $result = $this->db->fetch($sql, $params);
-        return $result['count'];
+
+    // Get transaction by ID
+    public function getById($id) {
+        $sql = "SELECT t.*, u.name as user_name FROM transactions t
+                JOIN users u ON t.user_id = u.id
+                WHERE t.id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch();
     }
-    
-    public function update($id, $userId, $data) {
-        $data['updated_at'] = date('Y-m-d H:i:s');
-        
-        return $this->db->update('transactions', $data, 'id = ? AND user_id = ?', [$id, $userId]);
+
+    // Update transaction
+    public function update($id, $type, $amount, $description = null, $date = null) {
+        $sql = "UPDATE transactions SET type = ?, amount = ?, description = ?, date = ? WHERE id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$type, $amount, $description, $date, $id]);
     }
-    
-    public function delete($id, $userId) {
-        return $this->db->delete('transactions', 'id = ? AND user_id = ?', [$id, $userId]);
+
+    // Delete transaction
+    public function delete($id) {
+        $sql = "DELETE FROM transactions WHERE id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$id]);
     }
-    
-    public function getBalance($userId, $customerId = null) {
-        $sql = 'SELECT 
-                    COALESCE(SUM(CASE WHEN type = "credit" THEN amount ELSE -amount END), 0) as balance
-                FROM transactions 
-                WHERE user_id = ?';
-        $params = [$userId];
-        
-        if ($customerId) {
-            $sql .= ' AND customer_id = ?';
-            $params[] = $customerId;
-        }
-        
-        $result = $this->db->fetch($sql, $params);
-        return $result['balance'];
+
+    // Get transactions by date range
+    public function getByDateRange($start_date, $end_date) {
+        $sql = "SELECT t.*, u.name as user_name FROM transactions t
+                JOIN users u ON t.user_id = u.id
+                WHERE t.date BETWEEN ? AND ?
+                ORDER BY t.date DESC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$start_date, $end_date]);
+        return $stmt->fetchAll();
     }
-    
-    public function getTransactionSummary($userId, $startDate = null, $endDate = null) {
-        $sql = '
-            SELECT 
-                type,
-                COUNT(*) as count,
-                SUM(amount) as total_amount
-            FROM transactions 
-            WHERE user_id = ?
-        ';
-        $params = [$userId];
-        
-        if ($startDate) {
-            $sql .= ' AND DATE(date) >= ?';
-            $params[] = $startDate;
-        }
-        
-        if ($endDate) {
-            $sql .= ' AND DATE(date) <= ?';
-            $params[] = $endDate;
-        }
-        
-        $sql .= ' GROUP BY type';
-        
-        return $this->db->fetchAll($sql, $params);
+
+    // Get summary statistics
+    public function getSummary() {
+        $sql = "SELECT
+                    COUNT(*) as total_transactions,
+                    SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END) as total_credit,
+                    SUM(CASE WHEN type = 'debit' THEN amount ELSE 0 END) as total_debit,
+                    SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END) -
+                    SUM(CASE WHEN type = 'debit' THEN amount ELSE 0 END) as net_balance
+                FROM transactions";
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetch();
     }
 }
+?>

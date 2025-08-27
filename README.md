@@ -67,6 +67,87 @@
 - Session Management - Automatic logout and security controls
 - API Rate Limiting - Protection against abuse and unauthorized access
 
+## Authentication System
+
+The application includes a complete authentication system connecting Flutter frontend with PHP backend:
+
+### Features
+- **User Registration** - Sign up with name, phone, email, and password
+- **Secure Login** - JWT-based authentication with password hashing
+- **Token Management** - Automatic token storage and validation
+- **Protected Routes** - Middleware for securing API endpoints
+- **Session Persistence** - Maintain login state across app restarts
+- **Logout Functionality** - Secure token cleanup
+
+### Backend Authentication Setup
+
+1. **Database Migration**
+   ```bash
+   cd backend
+   php migrate.php
+   ```
+
+2. **Environment Configuration**
+   ```env
+   # .env
+   DB_HOST=your_database_host
+   DB_NAME=your_database_name
+   DB_USER=your_username
+   DB_PASS=your_password
+   JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
+   ```
+
+3. **API Endpoints**
+   - `POST /api/auth/signup` - User registration
+   - `POST /api/auth/login` - User authentication
+   - `GET /api/auth/profile` - Get user profile (protected)
+
+### Frontend Authentication Setup
+
+1. **Install Dependencies**
+   ```bash
+   cd frontend
+   flutter pub get
+   ```
+
+2. **Configure API URL**
+   ```dart
+   // lib/services/auth_service.dart
+   static const String _baseUrl = 'http://your-backend-url/api';
+   ```
+
+3. **Authentication Flow**
+   - App checks authentication status on startup
+   - Redirects to login/signup if not authenticated
+   - Maintains session with JWT tokens
+   - Automatic logout on token expiry
+
+### Usage Example
+
+```dart
+// Login user
+final result = await AuthService.login('user@example.com', 'password');
+if (result['success']) {
+  // Navigate to home screen
+  context.go('/home');
+}
+
+// Check authentication status
+final status = await AuthService.getAuthStatus();
+if (status == AuthStatus.authenticated) {
+  // User is logged in
+}
+```
+
+### Security Features
+
+- **Password Hashing** - Bcrypt with cost factor 12
+- **JWT Tokens** - Secure token generation with expiry
+- **Input Validation** - Server-side validation for all inputs
+- **SQL Injection Protection** - Prepared statements
+- **CORS Configuration** - Proper cross-origin handling
+- **Token Validation** - Middleware for protected routes
+
 ### Business Operations
 - Multi-device Sync - Real-time synchronization across devices
 - Offline Mode - Continue working without internet connectivity
