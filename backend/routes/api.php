@@ -18,20 +18,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Get the request URI and method
 $request_uri = $_SERVER['REQUEST_URI'];
 $request_method = $_SERVER['REQUEST_METHOD'];
+$path_info = $_SERVER['PATH_INFO'] ?? '';
+$query_string = $_SERVER['QUERY_STRING'] ?? '';
 
 // Remove query string from URI
 $uri_parts = explode('?', $request_uri);
 $path = $uri_parts[0];
 
-// Only process API routes - if not starting with /api/, return 404
-if (strpos($path, '/api') !== 0) {
+// More flexible API route detection for different hosting environments
+$is_api_route = false;
+$api_path = '';
+
+// Check if path starts with /api/
+if (strpos($path, '/api') === 0) {
+    $is_api_route = true;
+    $api_path = str_replace('/api', '', $path);
+}
+// Check if path contains /api/ anywhere (for some hosting platforms)
+elseif (preg_match('/\/api\//', $path, $matches, PREG_OFFSET_CAPTURE)) {
+    $is_api_route = true;
+    $api_path = substr($path, $matches[0][1] + 5); // Remove '/api/' part
+}
+// Check PATH_INFO for API routes
+elseif (strpos($path_info, '/api') !== false) {
+    $is_api_route = true;
+    $api_path = str_replace('/api', '', $path_info);
+}
+// Check query string for API routes
+elseif (strpos($query_string, 'api') !== false) {
+    $is_api_route = true;
+    // Try to extract API path from query string
+    parse_str($query_string, $query_params);
+    $api_path = $query_params['api'] ?? '';
+}
+
+// Only process API routes
+if (!$is_api_route) {
     http_response_code(404);
     echo json_encode(['success' => false, 'message' => 'API endpoint not found']);
     exit;
 }
 
-// Remove the base path (/api/)
-$path = str_replace('/api', '', $path);
+// Use the extracted API path
+$path = $api_path;
 
 // Split the path into segments
 $path_segments = array_filter(explode('/', $path));

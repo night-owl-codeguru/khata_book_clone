@@ -11,7 +11,7 @@ class AuthService {
 
   // Base URL for API - update this to match your backend URL
   static const String _baseUrl =
-      'http://localhost:8000/api'; // Change this to your backend URL
+      'https://khata-book-clone.onrender.com/api'; // Deployed backend URL
 
   // Get stored token
   static Future<String?> getToken() async {
@@ -219,6 +219,56 @@ class AuthService {
       return result['success'] ?? false;
     } catch (e) {
       return false;
+    }
+  }
+
+  // Test backend connection
+  static Future<Map<String, dynamic>> testConnection() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://khata-book-clone.onrender.com/'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['success']) {
+        return {
+          'success': true,
+          'message': 'Backend connection successful',
+          'data': data,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Backend returned error',
+          'data': data,
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Connection failed: ${e.toString()}',
+      };
+    }
+  }
+
+  // Debug method to test API endpoints
+  static Future<Map<String, dynamic>> debugApiCall(String endpoint) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/$endpoint'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      return {
+        'success': true,
+        'statusCode': response.statusCode,
+        'body': response.body,
+        'headers': response.headers,
+      };
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
     }
   }
 }
