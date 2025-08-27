@@ -1,7 +1,8 @@
 <?php
-require_once 'controllers/UserController.php';
-require_once 'controllers/TransactionController.php';
-require_once 'controllers/AuthController.php';
+// Use absolute paths relative to this file so includes work when index.php includes routes
+require_once __DIR__ . '/../controllers/UserController.php';
+require_once __DIR__ . '/../controllers/TransactionController.php';
+require_once __DIR__ . '/../controllers/AuthController.php';
 
 // Set headers for API
 header('Content-Type: application/json');

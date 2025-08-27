@@ -1,5 +1,5 @@
 <?php
-require_once '../models/JWT.php';
+require_once __DIR__ . '/JWT.php';
 
 class AuthMiddleware {
     public static function validateToken() {

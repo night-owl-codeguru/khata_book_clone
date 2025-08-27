@@ -1,5 +1,5 @@
 <?php
-require_once '../models/Transaction.php';
+require_once __DIR__ . '/../models/Transaction.php';
 
 class TransactionController {
     private $transaction;

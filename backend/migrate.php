@@ -2,7 +2,7 @@
 // Database Migration Script for Authentication
 // Run this script to update your existing database schema to support authentication
 
-require_once 'config/database.php';
+require_once __DIR__ . '/config/database.php';
 
 try {
     // Add password column to users table

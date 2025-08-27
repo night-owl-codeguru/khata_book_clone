@@ -3,10 +3,10 @@
 // Run this script to test the authentication system
 // Usage: php test_auth.php
 
-require_once 'config/database.php';
-require_once 'models/User.php';
-require_once 'models/JWT.php';
-require_once 'controllers/AuthController.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/models/User.php';
+require_once __DIR__ . '/models/JWT.php';
+require_once __DIR__ . '/controllers/AuthController.php';
 
 echo "=== KhataBook Authentication Test ===\n\n";
 
