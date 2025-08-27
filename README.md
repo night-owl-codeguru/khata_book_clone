@@ -1,14 +1,14 @@
 # KhataBook Clone - Digital Ledger Application
 
 [![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
-[![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net/)
+[![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://golang.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](CONTRIBUTING.md)
 
 > A comprehensive digital ledger application that revolutionizes how small businesses and individuals manage their financial transactions, customer relationships, and business records.
 
-**KhataBook Clone** is a production-ready, full-stack solution built with Flutter for cross-platform frontend and PHP for the backend API, designed to replace traditional paper-based accounting with a modern, secure, and feature-rich digital platform.
+**KhataBook Clone** is a production-ready, full-stack solution built with Flutter for cross-platform frontend and Go for the backend API, designed to replace traditional paper-based accounting with a modern, secure, and feature-rich digital platform.
 
 ## Project Overview
 
@@ -79,28 +79,21 @@ The application includes a complete authentication system connecting Flutter fro
 - **Session Persistence** - Maintain login state across app restarts
 - **Logout Functionality** - Secure token cleanup
 
-### Backend Authentication Setup
+#### Backend Testing
+```bash
+# Run Go tests
+go test ./...
 
-1. **Database Migration**
-   ```bash
-   cd backend
-   php migrate.php
-   ```
+# Run tests with coverage
+go test -cover ./...
 
-2. **Environment Configuration**
-   ```env
-   # .env
-   DB_HOST=your_database_host
-   DB_NAME=your_database_name
-   DB_USER=your_username
-   DB_PASS=your_password
-   JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
-   ```
+# Run specific package tests
+go test ./handlers
 
-3. **API Endpoints**
-   - `POST /api/auth/signup` - User registration
-   - `POST /api/auth/login` - User authentication
-   - `GET /api/auth/profile` - Get user profile (protected)
+# Generate coverage report
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out -o coverage.html
+```
 
 ### Frontend Authentication Setup
 
@@ -285,56 +278,31 @@ frontend/
     └── integration/
 ```
 
-### Backend Architecture (PHP)
+### Backend Architecture (Go)
 ```
 backend/
-├── index.php                     # API entry point
-├── api/                          # API endpoints
-│   ├── auth/
-│   │   ├── index.php            # Authentication routes
-│   │   ├── login.php
-│   │   ├── register.php
-│   │   └── refresh.php
-│   ├── users/
-│   │   └── index.php            # User management
-│   ├── customers/
-│   │   └── index.php            # Customer CRUD operations
-│   ├── transactions/
-│   │   └── index.php            # Transaction management
-│   └── reports/
-│       └── index.php            # Report generation
-├── config/                       # Configuration files
-│   ├── database.php
-│   ├── cors.php
-│   ├── constants.php
-│   └── environment.php
-├── models/                       # Data models
-│   ├── User.php
-│   ├── Customer.php
-│   ├── Transaction.php
-│   └── Report.php
-├── middleware/                   # Middleware
-│   ├── auth.php
-│   ├── validation.php
-│   ├── rate_limit.php
-│   └── cors.php
-├── utils/                        # Utilities
-│   ├── helpers.php
-│   ├── jwt.php
-│   ├── email.php
-│   └── upload.php
-├── database/                     # Database related
-│   ├── schema.sql
-│   ├── migrations/
-│   └── seeders/
-├── storage/                      # File storage
-│   ├── uploads/
-│   ├── logs/
-│   └── cache/
-└── tests/                        # Test files
-    ├── unit/
-    ├── integration/
-    └── api/
+├── main.go                     # Application entry point and server setup
+├── go.mod                      # Go module definition
+├── go.sum                      # Dependency checksums
+├── .env                        # Environment variables
+├── handlers/                   # HTTP request handlers
+│   ├── auth.go                 # Authentication handlers (signup, login)
+│   └── ...                     # Future handlers (users, transactions, etc.)
+├── models/                     # Data models and structs
+│   ├── user.go                 # User model and request/response types
+│   └── ...                     # Future models
+├── database/                   # Database connection and setup
+│   └── db.go                   # MySQL connection and table creation
+├── config/                     # Configuration management
+│   └── config.go               # Configuration loading
+├── middleware/                 # HTTP middleware
+│   ├── cors.go                 # CORS handling
+│   ├── auth.go                 # JWT authentication middleware
+│   └── ...                     # Future middleware
+└── utils/                      # Utility functions
+    ├── jwt.go                  # JWT token generation and validation
+    ├── validation.go           # Input validation helpers
+    └── ...
 ```
 
 ### Database Schema
@@ -401,20 +369,20 @@ transactions (
 - Intl - Internationalization support
 
 #### Backend Technologies
-- PHP 8.0+ - Server-side scripting language
-- MySQL 8.0+ - Relational database management
-- Composer - PHP dependency management
-- JWT - JSON Web Token authentication
-- PHPMailer - Email functionality
-- Apache/Nginx - Web server
-- Redis (Optional) - Caching and session storage
+- **Go** 1.21+ - High-performance backend language
+- **MySQL** 8.0+ - Relational database management
+- **Gorilla Mux** - HTTP router and dispatcher
+- **JWT** - JSON Web Token authentication
+- **bcrypt** - Password hashing
+- **godotenv** - Environment variable management
+- **MySQL Driver** - Database connectivity
 
 #### Development Tools
 - VS Code - Primary IDE
 - Android Studio - Android development
 - Xcode - iOS development
 - Postman - API testing
-- phpMyAdmin - Database management
+- MySQL Workbench - Database management
 - Git - Version control system
 
 ### API Architecture
@@ -567,11 +535,10 @@ Before you begin, ensure you have the following installed on your development ma
 - **Git** for version control
 
 #### **For Backend Development**
-- **PHP** 8.0 or higher
+#### For Backend Development
+- **Go** 1.21 or higher ([Install Go](https://golang.org/dl/))
 - **MySQL** 8.0 or higher
-- **Composer** (PHP dependency manager)
-- **Apache** or **Nginx** web server
-- **phpMyAdmin** (optional, for database management)
+- **Git** for version control
 
 #### **System Requirements**
 - **RAM**: Minimum 8GB (16GB recommended)
@@ -588,17 +555,20 @@ cd khata_book_clone
 
 #### **2. Backend Setup**
 ```bash
+#### 2. Backend Setup
+```bash
 # Navigate to backend directory
 cd backend
 
-# Install PHP dependencies
-composer install
+# Install Go dependencies
+go mod tidy
 
 # Copy environment file
 cp .env.example .env
 
 # Edit .env with your database credentials
 nano .env
+```
 ```
 
 #### **3. Database Setup**
@@ -628,7 +598,7 @@ flutter doctor
 #### **5. Run the Application**
 ```bash
 # Start backend (in backend directory)
-php -S localhost:8000
+go run main.go
 
 # In a new terminal, start frontend (in frontend directory)
 flutter run
@@ -643,81 +613,67 @@ flutter run
    Edit the `.env` file with your configuration:
    ```env
    # Database Configuration
-   DB_HOST=localhost
-   DB_NAME=khatabook_db
-   DB_USER=your_username
-   DB_PASS=your_password
+   DB_HOST=khatabook-adit-ef94.j.aivencloud.com
+   DB_PORT=10570
+   DB_USER=avnadmin
+   DB_PASSWORD=YOUR_PASSWORD_HERE
+   DB_NAME=defaultdb
+   DB_SSL_MODE=REQUIRED
    
    # JWT Configuration
    JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
-   JWT_EXPIRE_TIME=3600
-   
-   # Email Configuration (for notifications)
-   MAIL_HOST=smtp.gmail.com
-   MAIL_PORT=587
-   MAIL_USERNAME=your_email@gmail.com
-   MAIL_PASSWORD=your_app_password
-   
-   # File Upload Configuration
-   UPLOAD_DIR=storage/uploads/
-   MAX_FILE_SIZE=5242880
-   
-   # API Configuration
-   API_VERSION=v1
-   CORS_ORIGIN=*
-   
-   # Security
-   BCRYPT_COST=12
+   SERVER_PORT=8080
    ```
 
-2. **Web Server Configuration**
+2. **Deployment Configuration**
 
-   **For Apache (.htaccess):**
-   ```apache
-   RewriteEngine On
-   RewriteCond %{REQUEST_FILENAME} !-f
-   RewriteCond %{REQUEST_FILENAME} !-d
-   RewriteRule ^(.*)$ index.php [QSA,L]
-   
-   # Enable CORS
-   Header always set Access-Control-Allow-Origin "*"
-   Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-   Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
-   ```
-
-   **For Nginx:**
-   ```nginx
-   server {
-       listen 80;
-       server_name your-domain.com;
-       root /path/to/khata_book_clone/backend;
-       index index.php;
-   
-       location / {
-           try_files $uri $uri/ /index.php?$query_string;
-       }
-   
-       location ~ \.php$ {
-           fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
-           fastcgi_index index.php;
-           fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-           include fastcgi_params;
-       }
-       
-       add_header Access-Control-Allow-Origin *;
-       add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS";
-       add_header Access-Control-Allow-Headers "Content-Type, Authorization";
-   }
-   ```
-
-3. **Directory Permissions**
+   **For Production Deployment:**
    ```bash
-   # Set proper permissions for storage directories
-   chmod -R 755 storage/
-   chmod -R 755 database/
+   # Build the Go binary
+   go build -o khatabook-backend main.go
    
-   # Make sure web server can write to these directories
-   chown -R www-data:www-data storage/
+   # Run the binary
+   ./khatabook-backend
+   ```
+
+   **Using Docker:**
+   ```dockerfile
+   FROM golang:1.21-alpine AS builder
+   WORKDIR /app
+   COPY go.mod go.sum ./
+   RUN go mod download
+   COPY . .
+   RUN go build -o main .
+   
+   FROM alpine:latest
+   RUN apk --no-cache add ca-certificates
+   WORKDIR /root/
+   COPY --from=builder /app/main .
+   CMD ["./main"]
+   ```
+
+   **Using systemd (Linux):**
+   ```bash
+   # Create service file
+   sudo nano /etc/systemd/system/khatabook-backend.service
+   
+   [Unit]
+   Description=KhataBook Backend
+   After=network.target
+   
+   [Service]
+   Type=simple
+   User=ubuntu
+   WorkingDirectory=/home/ubuntu/khata_book_clone/backend
+   ExecStart=/home/ubuntu/khata_book_clone/backend/khatabook-backend
+   Restart=always
+   
+   [Install]
+   WantedBy=multi-user.target
+   
+   # Enable and start service
+   sudo systemctl enable khatabook-backend
+   sudo systemctl start khatabook-backend
    ```
 
 #### **Frontend Configuration**
@@ -727,8 +683,7 @@ flutter run
    Edit `lib/utils/constants.dart`:
    ```dart
    class ApiConstants {
-     static const String baseUrl = 'http://localhost:8000/api'; // Change for production
-     static const String apiVersion = 'v1';
+     static const String baseUrl = 'http://localhost:8080/api'; // Change for production
      static const int connectTimeout = 30000;
      static const int receiveTimeout = 30000;
    }
@@ -899,21 +854,19 @@ dev_dependencies:
   build_runner: ^2.4.7
 ```
 
-### PHP Dependencies (composer.json)
-```json
-{
-  "require": {
-    "php": ">=8.0",
-    "firebase/php-jwt": "^6.0",
-    "phpmailer/phpmailer": "^6.8",
-    "intervention/image": "^2.7",
-    "vlucas/phpdotenv": "^5.5",
-    "ramsey/uuid": "^4.7"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^10.0"
-  }
-}
+### Go Dependencies (go.mod)
+```go
+module khata-book-backend
+
+go 1.21
+
+require (
+    github.com/gorilla/mux v1.8.1
+    github.com/golang-jwt/jwt/v5 v5.3.0
+    golang.org/x/crypto v0.41.0
+    github.com/joho/godotenv v1.5.1
+    github.com/go-sql-driver/mysql v1.9.3
+)
 ```
 
 ## Testing
@@ -930,13 +883,17 @@ flutter drive --target=test_driver/app.dart
 flutter test test/widget_test.dart
 ```
 
-### PHP Testing
+### Go Testing
 ```bash
-# Run PHPUnit tests
-vendor/bin/phpunit tests/
+# Run Go tests
+go test ./...
 
 # Run specific test class
-vendor/bin/phpunit tests/UserTest.php
+go test -run TestSignUp ./handlers
+
+# Generate coverage report
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out
 ```
 
 ## Supported Platforms
@@ -953,18 +910,14 @@ vendor/bin/phpunit tests/UserTest.php
 ### Environment Variables
 Create `.env` file in backend directory:
 ```env
-DB_HOST=localhost
-DB_NAME=khatabook_db
-DB_USER=your_username
-DB_PASS=your_password
+DB_HOST=khatabook-adit-ef94.j.aivencloud.com
+DB_PORT=10570
+DB_USER=avnadmin
+DB_PASSWORD=YOUR_PASSWORD_HERE
+DB_NAME=defaultdb
+DB_SSL_MODE=REQUIRED
 JWT_SECRET=your_jwt_secret_key
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=your_email@gmail.com
-MAIL_PASSWORD=your_app_password
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+SERVER_PORT=8080
 ```
 
 ### Firebase Configuration (for notifications)
@@ -977,21 +930,31 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 ### Authentication Endpoints
 
-#### POST /api/auth/register
+#### POST /api/signup
 ```json
 {
-  "name": "John Doe",
   "email": "john@example.com",
-  "phone": "+1234567890",
   "password": "securepassword"
 }
 ```
 
-#### POST /api/auth/login
+#### POST /api/login
 ```json
 {
   "email": "john@example.com",
   "password": "securepassword"
+}
+```
+
+Response for login:
+```json
+{
+  "token": "jwt_token_here",
+  "user": {
+    "id": 1,
+    "email": "john@example.com",
+    "created_at": "2025-01-01T00:00:00Z"
+  }
 }
 ```
 
@@ -1076,22 +1039,60 @@ flutter build web --release
 
 ### Backend Deployment
 
-#### Shared Hosting
-1. Upload files via FTP/cPanel
-2. Configure database connection
-3. Set up cron jobs for scheduled tasks
+#### Go Application Deployment
 
-#### VPS/Cloud Deployment
-```bash
-# Using Docker
-docker build -t khatabook-backend .
-docker run -d -p 80:80 khatabook-backend
+1. **Build the Application**
+   ```bash
+   cd backend
+   go build -o khatabook-backend main.go
+   ```
 
-# Using traditional LAMP stack
-sudo apt-get install apache2 php8.0 mysql-server
-# Configure virtual host
-# Set up SSL certificate
-```
+2. **Production Environment**
+   ```env
+   # Production .env
+   DB_HOST=khatabook-adit-ef94.j.aivencloud.com
+   DB_PORT=10570
+   DB_USER=avnadmin
+   DB_PASSWORD=your_actual_password
+   DB_NAME=defaultdb
+   DB_SSL_MODE=REQUIRED
+   JWT_SECRET=super-secure-jwt-secret-key-64-chars-minimum
+   SERVER_PORT=8080
+   ```
+
+3. **Using Docker**
+   ```bash
+   # Build Docker image
+   docker build -t khatabook-backend .
+   
+   # Run container
+   docker run -d -p 8080:8080 --env-file .env khatabook-backend
+   ```
+
+4. **Using systemd**
+   ```bash
+   # Create service file
+   sudo nano /etc/systemd/system/khatabook-backend.service
+   
+   [Unit]
+   Description=KhataBook Backend Service
+   After=network.target
+   
+   [Service]
+   Type=simple
+   User=ubuntu
+   WorkingDirectory=/path/to/backend
+   ExecStart=/path/to/backend/khatabook-backend
+   Restart=always
+   EnvironmentFile=/path/to/backend/.env
+   
+   [Install]
+   WantedBy=multi-user.target
+   
+   # Enable and start
+   sudo systemctl enable khatabook-backend
+   sudo systemctl start khatabook-backend
+   ```
 
 ## Performance Optimization
 
