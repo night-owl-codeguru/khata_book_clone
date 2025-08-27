@@ -7,10 +7,11 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 	"khata-book-backend/database"
 	"khata-book-backend/models"
+
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtSecret = []byte("your_jwt_secret_here") // In production, load from env
@@ -103,9 +104,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 func generateJWT(userID int, email string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
-		"email":    email,
-		"exp":      time.Now().Add(24 * time.Hour).Unix(),
-		"iat":      time.Now().Unix(),
+		"email":   email,
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+		"iat":     time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

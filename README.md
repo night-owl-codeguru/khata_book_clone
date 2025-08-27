@@ -1336,19 +1336,22 @@ dev_dependencies:
 
 #### **Backend Issues**
 
-1. **CORS Errors**
-   ```php
-   // Add to your API responses
-   header('Access-Control-Allow-Origin: *');
-   header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-   header('Access-Control-Allow-Headers: Content-Type, Authorization');
+1. **Database Connection Issues**
+   ```bash
+   # Check MySQL service
+   sudo systemctl status mysql
+   
+   # Test connection manually
+   mysql -h khatabook-adit-ef94.j.aivencloud.com -P 10570 -u avnadmin -p defaultdb
    ```
 
 2. **JWT Token Issues**
-   ```php
-   // Check token expiry
-   if (time() > $payload->exp) {
-       throw new Exception('Token expired');
+   ```go
+   // Check token expiry in handlers/auth.go
+   claims := jwt.MapClaims{
+       "user_id": userID,
+       "email":    email,
+       "exp":      time.Now().Add(24 * time.Hour).Unix(),
    }
    ```
 
