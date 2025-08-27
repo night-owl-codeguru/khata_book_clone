@@ -18,6 +18,10 @@ try {
 
     if ($ssl_mode === 'REQUIRED') {
         $options[PDO::MYSQL_ATTR_SSL_CA] = '/etc/ssl/certs/ca-cert.pem'; // CA certificate path in Docker
+    } elseif ($ssl_mode === 'DISABLED') {
+        // No SSL options needed
+    } elseif ($ssl_mode === 'VERIFY_IDENTITY') {
+        $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
     }
 
     $pdo = new PDO($dsn, $user, $password, $options);
