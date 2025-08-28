@@ -69,7 +69,7 @@
 
 ## Authentication System
 
-The application includes a complete authentication system connecting Flutter frontend with PHP backend:
+The application includes a complete authentication system connecting Flutter frontend with Go backend:
 
 ### Features
 - **User Registration** - Sign up with name, phone, email, and password
@@ -703,17 +703,18 @@ flutter run
 
 #### **Backend Testing**
 ```bash
-# Install PHPUnit (if not already installed)
-composer require --dev phpunit/phpunit
+# Run Go tests
+go test ./...
 
-# Run tests
-vendor/bin/phpunit tests/
+# Run tests with coverage
+go test -cover ./...
 
-# Run specific test
-vendor/bin/phpunit tests/Unit/UserTest.php
+# Run specific package tests
+go test ./handlers
 
-# Generate code coverage report
-vendor/bin/phpunit --coverage-html coverage/
+# Generate coverage report
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out -o coverage.html
 ```
 
 #### **Frontend Testing**
@@ -787,7 +788,7 @@ For a containerized development environment:
    flutter run
    ```
 
-### Backend Setup (PHP)
+### Backend Setup (Go)
 
 1. **Navigate to backend directory**
    ```bash
@@ -1440,7 +1441,7 @@ We welcome contributions from the community! Here's how you can help:
 
 #### **Code Style**
 - **Flutter**: Follow [Dart style guide](https://dart.dev/guides/language/effective-dart)
-- **PHP**: Follow [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standard
+- **Go**: Follow [Go style guide](https://golang.org/doc/effective_go)
 - Use meaningful variable and function names
 - Add comments for complex logic
 - Write unit tests for new features
@@ -1465,7 +1466,7 @@ test: add unit tests for user service
 
 When reporting bugs, please include:
 - Operating system and version
-- Flutter/PHP version
+- Flutter/Go version
 - Steps to reproduce
 - Expected vs actual behavior
 - Screenshots (if applicable)
@@ -1509,15 +1510,15 @@ Do not create public issues for security problems.
 
 #### **Backend Performance**
 - Use database indexing
-- Implement API caching
+- Implement connection pooling
 - Optimize SQL queries
 - Use connection pooling
-- Implement pagination
+- Implement proper error handling
 
 ### **Monitoring**
 
 - **Frontend**: Use Firebase Crashlytics
-- **Backend**: Implement logging with Monolog
+- **Backend**: Use Go's log package
 - **Database**: Monitor query performance
 - **API**: Track response times and error rates
 
@@ -1527,7 +1528,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ### **Third-party Licenses**
 - Flutter: BSD 3-Clause License
-- PHP: PHP License
+- Go: BSD 3-Clause License
 - MySQL: GPL v2 License
 
 ## Acknowledgments

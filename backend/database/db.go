@@ -18,10 +18,9 @@ func InitDB() {
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	dbname := os.Getenv("DB_NAME")
-	sslMode := os.Getenv("DB_SSL_MODE")
 
 	// Create DSN
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?ssl-mode=%s", user, password, host, port, dbname, sslMode)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?tls=skip-verify", user, password, host, port, dbname)
 
 	// Open database connection
 	var err error
