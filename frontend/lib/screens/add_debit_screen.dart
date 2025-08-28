@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../theme.dart';
+import '../services/ledger_service.dart';
+import '../services/customer_service.dart';
 
 class AddDebitScreen extends StatefulWidget {
   const AddDebitScreen({super.key});
@@ -18,16 +20,18 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
   String _selectedMethod = 'cash';
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
-  double _customerCreditBalance = 3200.0; // Mock customer credit balance
+  bool _isLoadingCustomers = true;
+  List<Map<String, dynamic>> _customers = [];
+  int? _selectedCustomerId;
+  double _customerCreditBalance = 0.0;
 
   final List<String> _paymentMethods = ['cash', 'upi', 'bank'];
-  final List<String> _customers = [
-    'Ramesh Traders',
-    'Mohan Kirana',
-    'Sita Textiles',
-    'Anand Dairy',
-    'Vijay Hardware',
-  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomers();
+  }
 
   @override
   void dispose() {
@@ -35,6 +39,31 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
     _amountController.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCustomers() async {
+    setState(() => _isLoadingCustomers = true);
+
+    try {
+      final result = await CustomerService.getCustomers();
+      if (result['success']) {
+        setState(() {
+          _customers = List<Map<String, dynamic>>.from(result['customers']);
+        });
+      } else {
+        // Fallback to mock data
+        setState(() {
+          _customers = CustomerService.getMockCustomers();
+        });
+      }
+    } catch (e) {
+      // Fallback to mock data
+      setState(() {
+        _customers = CustomerService.getMockCustomers();
+      });
+    } finally {
+      setState(() => _isLoadingCustomers = false);
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -54,6 +83,16 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_selectedCustomerId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select a valid customer'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
+
     final amount = double.parse(_amountController.text);
 
     // Check if debit exceeds customer credit balance
@@ -62,23 +101,47 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
       return;
     }
 
+    await _proceedWithDebit(amount);
+  }
+
+  Future<void> _proceedWithDebit(double amount) async {
     setState(() => _isLoading = true);
 
     try {
-      // TODO: Implement API call to save debit entry
-      await Future.delayed(const Duration(seconds: 1)); // Simulate API call
+      final note = _noteController.text.isNotEmpty
+          ? _noteController.text
+          : null;
 
-      if (mounted) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Debit saved successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+      final result = await LedgerService.createDebitEntry(
+        customerId: _selectedCustomerId!,
+        amount: amount,
+        method: _selectedMethod,
+        note: note,
+        date: _selectedDate,
+      );
 
-        // Navigate back to home
-        context.go('/home');
+      if (result['success']) {
+        if (mounted) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Debit saved successfully!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+
+          // Navigate back to home
+          context.go('/home');
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Error saving debit'),
+              backgroundColor: AppColors.danger,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -160,41 +223,6 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
     );
   }
 
-  Future<void> _proceedWithDebit(double amount) async {
-    setState(() => _isLoading = true);
-
-    try {
-      // TODO: Implement API call to save debit entry
-      await Future.delayed(const Duration(seconds: 1)); // Simulate API call
-
-      if (mounted) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Debit saved successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-
-        // Navigate back to home
-        context.go('/home');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error saving debit: $e'),
-            backgroundColor: AppColors.danger,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -269,24 +297,39 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
                 decoration: InputDecoration(
                   hintText: 'Search or add customer',
                   prefixIcon: const Icon(Icons.person),
-                  suffixIcon: PopupMenuButton<String>(
-                    icon: const Icon(Icons.arrow_drop_down),
-                    onSelected: (String value) {
-                      _customerController.text = value;
-                      // TODO: Load customer credit balance from API
-                      setState(() {
-                        _customerCreditBalance = 3200.0; // Mock balance
-                      });
-                    },
-                    itemBuilder: (BuildContext context) {
-                      return _customers.map((String customer) {
-                        return PopupMenuItem<String>(
-                          value: customer,
-                          child: Text(customer),
-                        );
-                      }).toList();
-                    },
-                  ),
+                  suffixIcon: _isLoadingCustomers
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : PopupMenuButton<String>(
+                          icon: const Icon(Icons.arrow_drop_down),
+                          onSelected: (String customerName) {
+                            final customer = _customers.firstWhere(
+                              (c) => c['name'] == customerName,
+                              orElse: () => <String, dynamic>{},
+                            );
+                            if (customer.isNotEmpty) {
+                              setState(() {
+                                _customerController.text = customerName;
+                                _selectedCustomerId = customer['id'];
+                                _customerCreditBalance =
+                                    customer['balance'] ?? 0.0;
+                              });
+                            }
+                          },
+                          itemBuilder: (BuildContext context) {
+                            return _customers.map((
+                              Map<String, dynamic> customer,
+                            ) {
+                              return PopupMenuItem<String>(
+                                value: customer['name'],
+                                child: Text(customer['name']),
+                              );
+                            }).toList();
+                          },
+                        ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {

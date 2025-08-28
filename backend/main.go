@@ -36,6 +36,11 @@ func main() {
 	r.HandleFunc("/api/profile", handlers.GetProfile).Methods("GET")
 	r.HandleFunc("/api/dashboard", handlers.GetDashboardSummary).Methods("GET")
 
+	// Ledger entry routes
+	r.HandleFunc("/api/ledger", handlers.CreateLedgerEntry).Methods("POST")
+	r.HandleFunc("/api/ledger", handlers.GetLedgerEntries).Methods("GET")
+	r.HandleFunc("/api/ledger/{id}", handlers.GetLedgerEntry).Methods("GET")
+
 	// Catch-all OPTIONS handler for CORS preflight requests
 	r.PathPrefix("/").Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// The corsMiddleware will already have set the necessary headers.
