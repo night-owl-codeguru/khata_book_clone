@@ -28,7 +28,9 @@ class LedgerService {
         'method': method,
         if (note != null && note.isNotEmpty) 'note': note,
         if (date != null)
-          'date': date.toIso8601String().split('T')[0], // YYYY-MM-DD format
+          'date': date
+              .toUtc()
+              .toIso8601String(), // RFC3339 format for Go backend
       };
 
       final response = await http.post(
