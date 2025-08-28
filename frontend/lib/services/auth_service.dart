@@ -87,7 +87,7 @@ class AuthService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/auth/signup'),
+        Uri.parse('$_baseUrl/signup'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'name': name,
@@ -130,7 +130,7 @@ class AuthService {
   ) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/auth/login'),
+        Uri.parse('$_baseUrl/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );
@@ -165,7 +165,7 @@ class AuthService {
       }
 
       final response = await http.get(
-        Uri.parse('$_baseUrl/auth/profile'),
+        Uri.parse('$_baseUrl/profile'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -244,6 +244,29 @@ class AuthService {
           'message': 'Backend returned error',
           'data': data,
         };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Connection failed: ${e.toString()}',
+      };
+    }
+  }
+
+  // Wake up call to check if server is ready
+  static Future<Map<String, dynamic>> wakeUpServer() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/health'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == 'healthy') {
+        return {'success': true, 'message': 'Server is ready', 'data': data};
+      } else {
+        return {'success': false, 'message': 'Server not ready', 'data': data};
       }
     } catch (e) {
       return {

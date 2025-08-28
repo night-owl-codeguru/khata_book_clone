@@ -41,12 +41,29 @@ func InitDB() {
 	createTableQuery := `
 	CREATE TABLE IF NOT EXISTS users (
 		id INT AUTO_INCREMENT PRIMARY KEY,
+		name VARCHAR(255),
+		phone VARCHAR(20),
 		email VARCHAR(255) UNIQUE NOT NULL,
+		address TEXT,
 		password_hash VARCHAR(255) NOT NULL,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	)`
 	_, err = DB.Exec(createTableQuery)
 	if err != nil {
 		log.Fatal("Error creating users table: ", err)
+	}
+
+	// Add missing columns if they don't exist (for existing databases)
+	alterTableQueries := []string{
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(255)`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)`,
+		`ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT`,
+	}
+
+	for _, query := range alterTableQueries {
+		_, err = DB.Exec(query)
+		if err != nil {
+			log.Printf("Warning: Could not alter table: %v", err)
+		}
 	}
 }

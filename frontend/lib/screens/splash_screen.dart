@@ -17,6 +17,7 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  String _loadingMessage = 'Initializing...';
 
   @override
   void initState() {
@@ -50,6 +51,9 @@ class _SplashScreenState extends State<SplashScreen>
     final hasInternet = await ConnectivityService.hasInternetConnection();
 
     if (!hasInternet) {
+      setState(() {
+        _loadingMessage = 'No internet connection...';
+      });
       // No internet - stay on splash screen with loading
       // Listen for connectivity changes
       ConnectivityService.onConnectivityChanged.listen((
@@ -58,15 +62,63 @@ class _SplashScreenState extends State<SplashScreen>
         if (result.isNotEmpty &&
             result[0] != ConnectivityResult.none &&
             mounted) {
-          // Internet restored - check auth status
-          _checkAuthStatus();
+          setState(() {
+            _loadingMessage = 'Connecting to server...';
+          });
+          // Internet restored - check server readiness
+          _checkServerReadiness();
         }
       });
       return;
     }
 
-    // Internet available - check auth status
-    _checkAuthStatus();
+    setState(() {
+      _loadingMessage = 'Connecting to server...';
+    });
+    // Internet available - check server readiness
+    _checkServerReadiness();
+  }
+
+  Future<void> _checkServerReadiness() async {
+    try {
+      setState(() {
+        _loadingMessage = 'Waking up server...';
+      });
+      // Call wake-up route to ensure server is ready
+      final wakeUpResult = await AuthService.wakeUpServer();
+
+      if (wakeUpResult['success'] == true) {
+        setState(() {
+          _loadingMessage = 'Server ready! Checking status...';
+        });
+        // Server is ready - proceed with auth status check
+        _checkAuthStatus();
+      } else {
+        setState(() {
+          _loadingMessage = 'Server not ready, retrying...';
+        });
+        // Server not ready - retry after a delay
+        if (mounted) {
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              _checkServerReadiness();
+            }
+          });
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _loadingMessage = 'Connection failed, retrying...';
+      });
+      // Error calling server - retry after a delay
+      if (mounted) {
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            _checkServerReadiness();
+          }
+        });
+      }
+    }
   }
 
   Future<void> _checkAuthStatus() async {
@@ -177,6 +229,16 @@ class _SplashScreenState extends State<SplashScreen>
                       valueColor: AlwaysStoppedAnimation<Color>(
                         Colors.white.withValues(alpha: 0.8),
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Loading message
+                    Text(
+                      _loadingMessage,
+                      style: AppTypography.body.copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),

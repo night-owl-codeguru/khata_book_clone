@@ -31,6 +31,8 @@ func main() {
 	// Define routes
 	r.HandleFunc("/api/signup", handlers.SignUp).Methods("POST")
 	r.HandleFunc("/api/login", handlers.Login).Methods("POST")
+	r.HandleFunc("/api/health", handlers.HealthCheck).Methods("GET")
+	r.HandleFunc("/api/profile", handlers.GetProfile).Methods("GET")
 
 	// Get server port
 	port := os.Getenv("SERVER_PORT")
