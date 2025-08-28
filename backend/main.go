@@ -13,10 +13,10 @@ import (
 )
 
 func main() {
-	// Load environment variables
+	// Load environment variables from .env file if it exists (for local development)
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("No .env file found, using environment variables from Render")
 	}
 
 	// Initialize database
