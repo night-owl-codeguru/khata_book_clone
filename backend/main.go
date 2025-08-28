@@ -1,12 +1,13 @@
 package main
 
 import (
-	"log"
+	// "log"
 	"net/http"
 	"os"
 
 	"khata-book-backend/database"
 	"khata-book-backend/handlers"
+	"khata-book-backend/pkg/logger"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -16,7 +17,7 @@ func main() {
 	// Load environment variables from .env file if it exists (for local development)
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("No .env file found, using environment variables from Render")
+		logger.L.WithField("stage", "env_load").Warn("No .env file found, using environment variables from environment")
 	}
 
 	// Initialize database
@@ -46,8 +47,8 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Server starting on port %s", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	logger.L.WithField("port", port).Info("Server starting")
+	logger.L.Fatal(http.ListenAndServe(":"+port, r))
 }
 
 func corsMiddleware(next http.Handler) http.Handler {

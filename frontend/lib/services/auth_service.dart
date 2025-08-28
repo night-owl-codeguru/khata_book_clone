@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum AuthStatus { needsOnboarding, needsSignup, needsLogin, authenticated }
+
 class AuthService {
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
@@ -113,13 +115,50 @@ class AuthService {
           'user': data['user'],
         };
       } else {
+        // Handle specific error types
+        String errorMessage = data['message'] ?? 'Signup failed';
+        String errorType = data['error'] ?? 'unknown_error';
+
+        switch (errorType) {
+          case 'email_exists':
+            errorMessage =
+                'An account with this email already exists. Please use a different email or try logging in.';
+            break;
+          case 'phone_exists':
+            errorMessage =
+                'An account with this phone number already exists. Please use a different phone number.';
+            break;
+          case 'invalid_email':
+            errorMessage = 'Please enter a valid email address.';
+            break;
+          case 'invalid_phone':
+            errorMessage = 'Please enter a valid phone number.';
+            break;
+          case 'weak_password':
+            errorMessage = 'Password must be at least 8 characters long.';
+            break;
+          case 'invalid_request':
+            errorMessage = 'Please check your input and try again.';
+            break;
+          case 'server_error':
+            errorMessage = 'Server error occurred. Please try again later.';
+            break;
+          default:
+            errorMessage = 'Signup failed. Please try again.';
+        }
+
         return {
           'success': false,
-          'message': data['message'] ?? 'Signup failed',
+          'message': errorMessage,
+          'error_type': errorType,
         };
       }
     } catch (e) {
-      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
+        'error_type': 'network_error',
+      };
     }
   }
 
@@ -149,10 +188,37 @@ class AuthService {
           'user': data['user'],
         };
       } else {
-        return {'success': false, 'message': data['message'] ?? 'Login failed'};
+        // Handle specific error types
+        String errorMessage = data['message'] ?? 'Login failed';
+        String errorType = data['error'] ?? 'unknown_error';
+
+        switch (errorType) {
+          case 'invalid_credentials':
+            errorMessage =
+                'Invalid email or password. Please check your credentials and try again.';
+            break;
+          case 'invalid_request':
+            errorMessage = 'Please check your input and try again.';
+            break;
+          case 'server_error':
+            errorMessage = 'Server error occurred. Please try again later.';
+            break;
+          default:
+            errorMessage = 'Login failed. Please try again.';
+        }
+
+        return {
+          'success': false,
+          'message': errorMessage,
+          'error_type': errorType,
+        };
       }
     } catch (e) {
-      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
+        'error_type': 'network_error',
+      };
     }
   }
 
@@ -212,18 +278,27 @@ class AuthService {
     }
   }
 
-  // Validate current token
-  static Future<bool> validateToken() async {
+  // Validate current token and refresh user data if needed
+  static Future<bool> validateAndRefreshSession() async {
     try {
       final result = await getProfile();
-      return result['success'] ?? false;
+      if (result['success'] == true) {
+        // Update stored user data with fresh data from server
+        await setUserData(result['user']);
+        return true;
+      } else {
+        // Token is invalid, clear stored data
+        await logout();
+        return false;
+      }
     } catch (e) {
-      return false;
+      // Network error, keep current session but log the issue
+      return await isLoggedIn();
     }
   }
 
   // Test backend connection
-  static Future<Map<String, dynamic>> testConnection() async {
+  Future<Map<String, dynamic>> testConnection() async {
     try {
       final response = await http.get(
         Uri.parse('https://khata-book-clone.onrender.com/'),
@@ -264,20 +339,31 @@ class AuthService {
       final data = json.decode(response.body);
 
       if (response.statusCode == 200 && data['status'] == 'healthy') {
-        return {'success': true, 'message': 'Server is ready', 'data': data};
+        return {
+          'success': true,
+          'message': 'Server is ready',
+          'data': data,
+          'debug': 'Status: ${response.statusCode}, Response: ${response.body}',
+        };
       } else {
-        return {'success': false, 'message': 'Server not ready', 'data': data};
+        return {
+          'success': false,
+          'message': 'Server not ready',
+          'data': data,
+          'debug': 'Status: ${response.statusCode}, Response: ${response.body}',
+        };
       }
     } catch (e) {
       return {
         'success': false,
         'message': 'Connection failed: ${e.toString()}',
+        'debug': 'Error: ${e.toString()}',
       };
     }
   }
 
   // Debug method to test API endpoints
-  static Future<Map<String, dynamic>> debugApiCall(String endpoint) async {
+  Future<Map<String, dynamic>> debugApiCall(String endpoint) async {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/$endpoint'),
@@ -295,5 +381,3 @@ class AuthService {
     }
   }
 }
-
-enum AuthStatus { needsOnboarding, needsSignup, needsLogin, authenticated }

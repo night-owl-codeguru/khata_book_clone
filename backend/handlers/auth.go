@@ -3,14 +3,15 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"khata-book-backend/database"
 	"khata-book-backend/models"
+	"khata-book-backend/pkg/logger"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -18,10 +19,17 @@ import (
 
 var jwtSecret []byte
 
+// writeJSON writes a JSON response with headers
+func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(payload)
+}
+
 func init() {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		log.Fatal("JWT_SECRET environment variable is required")
+		logger.L.Fatal("JWT_SECRET environment variable is required")
 	}
 	jwtSecret = []byte(secret)
 }
@@ -31,75 +39,111 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&userReq)
 	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "invalid_request", "message": "Invalid request body"})
 		return
 	}
 
 	// Validate email format
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	if !emailRegex.MatchString(userReq.Email) {
-		http.Error(w, "Invalid email format", http.StatusBadRequest)
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "invalid_email", "message": "Invalid email format"})
 		return
 	}
 
-	// Check if email already exists
+	phoneRegex := regexp.MustCompile(`^[0-9+()\-\s]{6,20}$`)
+	if userReq.Phone != "" && !phoneRegex.MatchString(userReq.Phone) {
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "invalid_phone", "message": "Invalid phone number"})
+		return
+	}
+
+	// Check if email or phone already exists (use index enforcement too)
 	var existingID int
-	err = database.DB.QueryRow(`
-		SELECT id 
-		FROM users 
-		WHERE email = ?
-	`, userReq.Email).Scan(&existingID)
+	err = database.DB.QueryRow(`SELECT id FROM users WHERE email = ? LIMIT 1`, userReq.Email).Scan(&existingID)
 	if err == nil {
-		log.Printf("Email already exists: %s", userReq.Email)
-		http.Error(w, "Email already exists", http.StatusConflict)
+		logger.L.WithField("email", userReq.Email).Warn("Signup attempt with existing email")
+		writeJSON(w, http.StatusConflict, map[string]interface{}{"success": false, "error": "email_exists", "message": "Email already registered"})
+		return
+	} else if err != sql.ErrNoRows {
+		logger.L.WithField("error", err).Error("Database error checking existing email")
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not process request"})
 		return
 	}
 
-	log.Printf("Email check passed for: %s", userReq.Email)
+	if userReq.Phone != "" {
+		err = database.DB.QueryRow(`SELECT id FROM users WHERE phone = ? LIMIT 1`, userReq.Phone).Scan(&existingID)
+		if err == nil {
+			logger.L.WithField("phone", userReq.Phone).Warn("Signup attempt with existing phone")
+			writeJSON(w, http.StatusConflict, map[string]interface{}{"success": false, "error": "phone_exists", "message": "Phone number already registered"})
+			return
+		} else if err != sql.ErrNoRows {
+			logger.L.WithField("error", err).Error("Database error checking existing phone")
+			writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not process request"})
+			return
+		}
+	}
 
 	// Hash password
+	// Hash password
+	if len(userReq.Password) < 8 {
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "weak_password", "message": "Password must be at least 8 characters"})
+		return
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userReq.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Printf("Error hashing password: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		logger.L.WithField("error", err).Error("Error hashing password")
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not process request"})
 		return
 	}
 
-	log.Printf("Password hashed successfully, length: %d", len(hashedPassword))
-
-	// Insert user into database
-	result, err := database.DB.Exec(`
-		INSERT INTO users (
-			name, 
-			phone, 
-			email, 
-			address, 
-			password_hash
-		) VALUES (?, ?, ?, ?, ?)
-	`, userReq.Name, userReq.Phone, userReq.Email, userReq.Address, string(hashedPassword))
+	// Use transaction for create
+	tx, err := database.DB.Begin()
 	if err != nil {
-		log.Printf("Error inserting user: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		logger.L.WithField("error", err).Error("Could not start transaction for user create")
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not process request"})
 		return
 	}
 
-	log.Printf("User inserted successfully")
+	result, err := tx.Exec(`INSERT INTO users (name, phone, email, address, password_hash) VALUES (?, ?, ?, ?, ?)`, userReq.Name, userReq.Phone, userReq.Email, userReq.Address, string(hashedPassword))
+	if err != nil {
+		tx.Rollback()
+		// Check if it's a duplicate entry error
+		if strings.Contains(err.Error(), "Duplicate entry") || strings.Contains(err.Error(), "UNIQUE constraint") {
+			logger.L.WithField("error", err).Warn("Unique constraint violation during user creation")
+			if strings.Contains(err.Error(), "email") {
+				writeJSON(w, http.StatusConflict, map[string]interface{}{"success": false, "error": "email_exists", "message": "An account with this email already exists"})
+				return
+			} else if strings.Contains(err.Error(), "phone") {
+				writeJSON(w, http.StatusConflict, map[string]interface{}{"success": false, "error": "phone_exists", "message": "An account with this phone number already exists"})
+				return
+			}
+		}
+		logger.L.WithField("error", err).Error("Error inserting user")
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not create user"})
+		return
+	}
 
-	// Get the inserted user ID
 	userID, err := result.LastInsertId()
 	if err != nil {
-		log.Printf("Error getting user ID: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		tx.Rollback()
+		logger.L.WithField("error", err).Error("Error getting inserted user ID")
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not create user"})
 		return
 	}
 
-	log.Printf("User created with ID: %d", userID)
+	if err := tx.Commit(); err != nil {
+		logger.L.WithField("error", err).Error("Error committing user creation transaction")
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not create user"})
+		return
+	}
+
+	logger.L.WithFields(map[string]interface{}{"user_id": userID, "email": userReq.Email}).Info("User created successfully")
 
 	// Generate JWT token
 	token, err := generateJWT(int(userID), userReq.Email)
 	if err != nil {
-		log.Printf("Error generating JWT: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		logger.L.WithField("error", err).Error("Error generating JWT")
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not create session"})
 		return
 	}
 
@@ -117,13 +161,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		User:  user,
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "User created successfully",
-		"user":    response.User,
-		"token":   response.Token,
-	})
+	writeJSON(w, http.StatusCreated, map[string]interface{}{"success": true, "message": "User created successfully", "user": response.User, "token": response.Token})
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -131,19 +169,19 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&userReq)
 	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "invalid_request", "message": "Invalid request body"})
 		return
 	}
 
-	log.Printf("Login attempt for email: %s", userReq.Email)
+	logger.L.WithField("email", userReq.Email).Info("Login attempt")
 
 	// Check if any users exist in the database
 	var userCount int
 	err = database.DB.QueryRow("SELECT COUNT(*) FROM users").Scan(&userCount)
 	if err != nil {
-		log.Printf("Error counting users: %v", err)
+		logger.L.WithField("error", err).Warn("Error counting users")
 	} else {
-		log.Printf("Total users in database: %d", userCount)
+		logger.L.WithField("count", userCount).Debug("Total users in database")
 	}
 
 	// Get user from database
@@ -155,54 +193,38 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		WHERE email = ?
 	`, userReq.Email).Scan(&user.ID, &user.Name, &user.Phone, &user.Email, &user.Address, &user.PasswordHash, &createdAtStr)
 	if err != nil {
-		log.Printf("Database error: %v", err)
+		logger.L.WithField("error", err).Warn("Database error fetching user by email")
 		if err == sql.ErrNoRows {
-			log.Printf("No user found with email: %s", userReq.Email)
-			// Let's see what emails are actually in the database
-			rows, err := database.DB.Query("SELECT email FROM users LIMIT 5")
-			if err != nil {
-				log.Printf("Error querying emails: %v", err)
-			} else {
-				defer rows.Close()
-				log.Printf("Existing emails in database:")
-				for rows.Next() {
-					var email string
-					rows.Scan(&email)
-					log.Printf("  - %s", email)
-				}
-			}
+			logger.L.WithField("email", userReq.Email).Info("No user found for login")
 		}
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{"success": false, "error": "invalid_credentials", "message": "Invalid email or password"})
 		return
 	}
 
 	// Parse created_at timestamp
 	user.CreatedAt, err = time.Parse("2006-01-02 15:04:05", createdAtStr)
 	if err != nil {
-		log.Printf("Error parsing created_at: %v", err)
-		// Set to current time as fallback
+		logger.L.WithField("error", err).Warn("Error parsing created_at for user, using now as fallback")
 		user.CreatedAt = time.Now()
 	}
 
-	log.Printf("User found: ID=%d, Email=%s, PasswordHash length=%d", user.ID, user.Email, len(user.PasswordHash))
+	logger.L.WithFields(map[string]interface{}{"user_id": user.ID, "email": user.Email, "hash_len": len(user.PasswordHash)}).Info("User retrieved for login")
 
 	// Verify password
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(userReq.Password))
 	if err != nil {
-		log.Printf("Password comparison failed: %v", err)
-		log.Printf("Stored hash: %s", user.PasswordHash)
-		log.Printf("Input password: %s", userReq.Password)
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		logger.L.WithField("user_id", user.ID).Warn("Password comparison failed")
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{"success": false, "error": "invalid_credentials", "message": "Invalid email or password"})
 		return
 	}
 
-	log.Printf("Password verification successful")
+	logger.L.WithField("user_id", user.ID).Info("Password verification successful")
 
 	// Generate JWT token
 	token, err := generateJWT(user.ID, user.Email)
 	if err != nil {
-		log.Printf("Error generating JWT: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		logger.L.WithField("error", err).Error("Error generating JWT")
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not create session"})
 		return
 	}
 
@@ -211,13 +233,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		User:  user,
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "Login successful",
-		"user":    response.User,
-		"token":   response.Token,
-	})
+	writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "message": "Login successful", "user": response.User, "token": response.Token})
 }
 
 func generateJWT(userID int, email string) (string, error) {
@@ -246,7 +262,7 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	// Get token from Authorization header
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" || len(authHeader) < 7 || authHeader[:7] != "Bearer " {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{"success": false, "error": "unauthorized", "message": "Authorization token required"})
 		return
 	}
 
@@ -258,14 +274,14 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil || !token.Valid {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{"success": false, "error": "invalid_token", "message": "Invalid or expired token"})
 		return
 	}
 
 	// Get claims
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{"success": false, "error": "invalid_token", "message": "Invalid token claims"})
 		return
 	}
 
@@ -280,25 +296,20 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 		WHERE id = ?
 	`, userID).Scan(&user.ID, &user.Name, &user.Phone, &user.Email, &user.Address, &createdAtStr)
 	if err != nil {
-		log.Printf("Error getting user profile: %v", err)
-		http.Error(w, "User not found", http.StatusNotFound)
+		logger.L.WithField("error", err).Error("Error getting user profile")
+		writeJSON(w, http.StatusNotFound, map[string]interface{}{"success": false, "error": "not_found", "message": "User not found"})
 		return
 	}
 
 	// Parse created_at timestamp
 	user.CreatedAt, err = time.Parse("2006-01-02 15:04:05", createdAtStr)
 	if err != nil {
-		log.Printf("Error parsing created_at: %v", err)
-		// Set to current time as fallback
+		logger.L.WithField("error", err).Warn("Error parsing created_at for profile; using now as fallback")
 		user.CreatedAt = time.Now()
 	}
 
 	// Remove password hash from response
 	user.PasswordHash = ""
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"user":    user,
-	})
+	writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "user": user})
 }

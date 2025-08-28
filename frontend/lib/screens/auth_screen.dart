@@ -19,6 +19,10 @@ class _AuthScreenState extends State<AuthScreen> {
   final _confirmPasswordController = TextEditingController();
   final _addressController = TextEditingController();
 
+  // Focus nodes for better error handling
+  final _emailFocusNode = FocusNode();
+  final _phoneFocusNode = FocusNode();
+
   bool _isLogin = true;
   bool _isLoading = false;
 
@@ -30,6 +34,8 @@ class _AuthScreenState extends State<AuthScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _addressController.dispose();
+    _emailFocusNode.dispose();
+    _phoneFocusNode.dispose();
     super.dispose();
   }
 
@@ -59,14 +65,61 @@ class _AuthScreenState extends State<AuthScreen> {
       }
 
       if (result['success'] && mounted) {
-        context.go('/home');
-      } else {
-        _showErrorSnackBar(
-          result['message'] ?? 'Authentication failed. Please try again.',
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Success!'),
+            backgroundColor: Colors.green,
+          ),
         );
+
+        // Navigate to home after a brief delay to show the success message
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            context.go('/home');
+          }
+        });
+      } else {
+        // Show specific error message based on error type
+        String errorMessage =
+            result['message'] ?? 'Authentication failed. Please try again.';
+        Color snackBarColor = Colors.red;
+
+        // Customize error message and color based on error type
+        String errorType = result['error_type'] ?? '';
+        switch (errorType) {
+          case 'email_exists':
+            // Focus on email field and show specific message
+            _emailController.selection = TextSelection(
+              baseOffset: 0,
+              extentOffset: _emailController.text.length,
+            );
+            FocusScope.of(context).requestFocus(_emailFocusNode);
+            break;
+          case 'phone_exists':
+            // Focus on phone field
+            _phoneController.selection = TextSelection(
+              baseOffset: 0,
+              extentOffset: _phoneController.text.length,
+            );
+            FocusScope.of(context).requestFocus(_phoneFocusNode);
+            break;
+          case 'network_error':
+            errorMessage =
+                'Network connection issue. Please check your internet and try again.';
+            snackBarColor = Colors.orange;
+            break;
+          case 'server_error':
+            errorMessage =
+                'Server is temporarily unavailable. Please try again in a few minutes.';
+            snackBarColor = Colors.orange;
+            break;
+        }
+
+        _showErrorSnackBar(errorMessage, snackBarColor);
       }
     } catch (e) {
-      _showErrorSnackBar('An error occurred. Please try again.');
+      _showErrorSnackBar('An unexpected error occurred. Please try again.');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -74,9 +127,13 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  void _showErrorSnackBar(String message) {
+  void _showErrorSnackBar(String message, [Color? backgroundColor]) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor ?? Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
     );
   }
 
@@ -174,6 +231,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     if (!_isLogin)
                       TextFormField(
                         controller: _phoneController,
+                        focusNode: _phoneFocusNode,
                         decoration: InputDecoration(
                           labelText: 'Phone Number',
                           hintText: 'Enter your phone number',
@@ -196,6 +254,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     // Email Field
                     TextFormField(
                       controller: _emailController,
+                      focusNode: _emailFocusNode,
                       decoration: InputDecoration(
                         labelText: 'Email',
                         hintText: 'Enter your email',
@@ -233,8 +292,8 @@ class _AuthScreenState extends State<AuthScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
                         }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
+                        if (value.length < 8) {
+                          return 'Password must be at least 8 characters';
                         }
                         return null;
                       },

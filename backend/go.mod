@@ -10,4 +10,8 @@ require (
 	golang.org/x/crypto v0.41.0
 )
 
-require filippo.io/edwards25519 v1.1.0 // indirect
+require (
+	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+)

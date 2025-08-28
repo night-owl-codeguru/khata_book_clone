@@ -1,84 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/splash_screen.dart';
 import '../screens/onboarding_screen.dart';
 import '../screens/auth_screen.dart';
+import '../screens/home_screen.dart';
+import '../screens/add_entry_selector_screen.dart';
+import '../screens/add_credit_screen.dart';
+import '../screens/add_debit_screen.dart';
+import '../screens/customers_screen.dart';
+import '../screens/reminders_screen.dart';
+import '../screens/reports_screen.dart';
+import '../screens/settings_screen.dart';
 import '../services/auth_service.dart';
-
-class HomePlaceholderScreen extends StatefulWidget {
-  const HomePlaceholderScreen({super.key});
-
-  @override
-  State<HomePlaceholderScreen> createState() => _HomePlaceholderScreenState();
-}
-
-class _HomePlaceholderScreenState extends State<HomePlaceholderScreen> {
-  Map<String, dynamic>? _userData;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    final userData = await AuthService.getUserData();
-    if (mounted) {
-      setState(() {
-        _userData = userData;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await AuthService.logout();
-              // Navigate back to splash to recheck auth status
-              if (context.mounted) {
-                context.go('/splash');
-              }
-            },
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Welcome to LedgerBook!',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 20),
-            if (_userData != null) ...[
-              Text('Name: ${_userData!['name']}'),
-              Text('Email: ${_userData!['email']}'),
-              Text('Phone: ${_userData!['phone']}'),
-              if (_userData!['address'] != null)
-                Text('Address: ${_userData!['address']}'),
-            ] else ...[
-              const Text('Loading user data...'),
-              const CircularProgressIndicator(),
-            ],
-            const SizedBox(height: 40),
-            const Text(
-              'Home Screen - Coming Soon',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -98,9 +30,93 @@ class AppRouter {
       ),
       GoRoute(
         path: '/home',
-        builder: (context, state) => const HomePlaceholderScreen(),
+        builder: (context, state) => const HomeScreen(),
         redirect: (context, state) async {
           // Check if user is authenticated before allowing access to home
+          final isLoggedIn = await AuthService.isLoggedIn();
+          if (!isLoggedIn) {
+            return '/auth/login';
+          }
+          return null;
+        },
+      ),
+      GoRoute(
+        path: '/add',
+        builder: (context, state) => const AddEntrySelectorScreen(),
+        redirect: (context, state) async {
+          // Check if user is authenticated
+          final isLoggedIn = await AuthService.isLoggedIn();
+          if (!isLoggedIn) {
+            return '/auth/login';
+          }
+          return null;
+        },
+      ),
+      GoRoute(
+        path: '/add/credit',
+        builder: (context, state) => const AddCreditScreen(),
+        redirect: (context, state) async {
+          // Check if user is authenticated
+          final isLoggedIn = await AuthService.isLoggedIn();
+          if (!isLoggedIn) {
+            return '/auth/login';
+          }
+          return null;
+        },
+      ),
+      GoRoute(
+        path: '/add/debit',
+        builder: (context, state) => const AddDebitScreen(),
+        redirect: (context, state) async {
+          // Check if user is authenticated
+          final isLoggedIn = await AuthService.isLoggedIn();
+          if (!isLoggedIn) {
+            return '/auth/login';
+          }
+          return null;
+        },
+      ),
+      GoRoute(
+        path: '/customers',
+        builder: (context, state) => const CustomersScreen(),
+        redirect: (context, state) async {
+          // Check if user is authenticated
+          final isLoggedIn = await AuthService.isLoggedIn();
+          if (!isLoggedIn) {
+            return '/auth/login';
+          }
+          return null;
+        },
+      ),
+      GoRoute(
+        path: '/reminders',
+        builder: (context, state) => const RemindersScreen(),
+        redirect: (context, state) async {
+          // Check if user is authenticated
+          final isLoggedIn = await AuthService.isLoggedIn();
+          if (!isLoggedIn) {
+            return '/auth/login';
+          }
+          return null;
+        },
+      ),
+      GoRoute(
+        path: '/reports',
+        builder: (context, state) => const ReportsScreen(),
+        redirect: (context, state) async {
+          // Check if user is authenticated
+          final isLoggedIn = await AuthService.isLoggedIn();
+          if (!isLoggedIn) {
+            return '/auth/login';
+          }
+          return null;
+        },
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+        redirect: (context, state) async {
+          // Check if user is authenticated
           final isLoggedIn = await AuthService.isLoggedIn();
           if (!isLoggedIn) {
             return '/auth/login';
