@@ -23,6 +23,7 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
   bool _isLoadingCustomers = true;
   List<Map<String, dynamic>> _customers = [];
   int? _selectedCustomerId;
+  String _customerName = ''; // Store the customer name separately
 
   final List<String> _paymentMethods = ['cash', 'upi', 'bank'];
 
@@ -82,10 +83,11 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_selectedCustomerId == null) {
+    final customerName = _customerController.text.trim();
+    if (customerName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please select a valid customer'),
+          content: const Text('Please enter a customer name'),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -95,6 +97,31 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Check if customer exists, if not create them
+      if (_selectedCustomerId == null) {
+        final createResult = await CustomerService.createCustomer(
+          name: customerName,
+        );
+
+        if (!createResult['success']) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  createResult['message'] ?? 'Failed to create customer',
+                ),
+                backgroundColor: AppColors.danger,
+              ),
+            );
+          }
+          return;
+        }
+
+        // Get the created customer ID
+        final createdCustomer = createResult['customer'];
+        _selectedCustomerId = createdCustomer['id'];
+      }
+
       final amount = double.parse(_amountController.text);
       final note = _noteController.text.isNotEmpty
           ? _noteController.text
@@ -220,49 +247,130 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
                 style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _customerController,
-                decoration: InputDecoration(
-                  hintText: 'Search or add customer',
-                  prefixIcon: const Icon(Icons.person),
-                  suffixIcon: _isLoadingCustomers
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : PopupMenuButton<String>(
-                          icon: const Icon(Icons.arrow_drop_down),
-                          onSelected: (String customerName) {
+              Autocomplete<String>(
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  if (textEditingValue.text.isEmpty) {
+                    return _customers.map(
+                      (customer) => customer['name'] as String,
+                    );
+                  }
+                  return _customers
+                      .map((customer) => customer['name'] as String)
+                      .where(
+                        (name) => name.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        ),
+                      );
+                },
+                onSelected: (String selection) {
+                  final customer = _customers.firstWhere(
+                    (c) => c['name'] == selection,
+                    orElse: () => <String, dynamic>{},
+                  );
+                  if (customer.isNotEmpty) {
+                    setState(() {
+                      _customerController.text = selection;
+                      _selectedCustomerId = customer['id'];
+                    });
+                  } else {
+                    // If customer doesn't exist, we'll create it later
+                    setState(() {
+                      _customerController.text = selection;
+                      _selectedCustomerId = null; // Will be created on submit
+                    });
+                  }
+                },
+                fieldViewBuilder:
+                    (
+                      BuildContext context,
+                      TextEditingController textEditingController,
+                      FocusNode focusNode,
+                      VoidCallback onFieldSubmitted,
+                    ) {
+                      // Initialize controller text if we have a value
+                      if (_customerController.text.isNotEmpty &&
+                          textEditingController.text.isEmpty) {
+                        textEditingController.text = _customerController.text;
+                      }
+                      return TextFormField(
+                        controller: textEditingController,
+                        focusNode: focusNode,
+                        decoration: InputDecoration(
+                          hintText: 'Type customer name or select from list',
+                          prefixIcon: const Icon(Icons.person),
+                          suffixIcon: _isLoadingCustomers
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    textEditingController.clear();
+                                    setState(() {
+                                      _selectedCustomerId = null;
+                                      _customerController.clear();
+                                    });
+                                  },
+                                ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a customer name';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          // Update our controller and reset selected customer ID when user types
+                          _customerController.text = value;
+                          if (_selectedCustomerId != null) {
                             final customer = _customers.firstWhere(
-                              (c) => c['name'] == customerName,
+                              (c) => c['name'] == value,
                               orElse: () => <String, dynamic>{},
                             );
-                            if (customer.isNotEmpty) {
+                            if (customer.isEmpty) {
                               setState(() {
-                                _customerController.text = customerName;
-                                _selectedCustomerId = customer['id'];
+                                _selectedCustomerId = null;
                               });
                             }
-                          },
-                          itemBuilder: (BuildContext context) {
-                            return _customers.map((
-                              Map<String, dynamic> customer,
-                            ) {
-                              return PopupMenuItem<String>(
-                                value: customer['name'],
-                                child: Text(customer['name']),
-                              );
-                            }).toList();
-                          },
+                          }
+                        },
+                      );
+                    },
+                optionsViewBuilder:
+                    (
+                      BuildContext context,
+                      AutocompleteOnSelected<String> onSelected,
+                      Iterable<String> options,
+                    ) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 4.0,
+                          child: Container(
+                            constraints: const BoxConstraints(maxHeight: 200),
+                            width:
+                                MediaQuery.of(context).size.width -
+                                48, // Account for padding
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              itemCount: options.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final String option = options.elementAt(index);
+                                return ListTile(
+                                  title: Text(option),
+                                  onTap: () => onSelected(option),
+                                );
+                              },
+                            ),
+                          ),
                         ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select or enter a customer';
-                  }
-                  return null;
-                },
+                      );
+                    },
               ),
 
               const SizedBox(height: 24),

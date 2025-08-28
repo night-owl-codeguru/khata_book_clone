@@ -36,6 +36,11 @@ func main() {
 	r.HandleFunc("/api/profile", handlers.GetProfile).Methods("GET")
 	r.HandleFunc("/api/dashboard", handlers.GetDashboardSummary).Methods("GET")
 
+	// Customer routes
+	r.HandleFunc("/api/customers", handlers.GetCustomers).Methods("GET")
+	r.HandleFunc("/api/customers", handlers.CreateCustomer).Methods("POST")
+	r.HandleFunc("/api/customers/{id}", handlers.GetCustomer).Methods("GET")
+
 	// Ledger entry routes
 	r.HandleFunc("/api/ledger", handlers.CreateLedgerEntry).Methods("POST")
 	r.HandleFunc("/api/ledger", handlers.GetLedgerEntries).Methods("GET")

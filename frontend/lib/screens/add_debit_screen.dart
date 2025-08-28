@@ -83,25 +83,69 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_selectedCustomerId == null) {
+    final customerName = _customerController.text.trim();
+    if (customerName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please select a valid customer'),
+          content: const Text('Please enter a customer name'),
           backgroundColor: AppColors.danger,
         ),
       );
       return;
     }
 
-    final amount = double.parse(_amountController.text);
+    setState(() => _isLoading = true);
 
-    // Check if debit exceeds customer credit balance
-    if (amount > _customerCreditBalance) {
-      _showCreditWarning(amount);
-      return;
+    try {
+      // Check if customer exists, if not create them
+      if (_selectedCustomerId == null) {
+        final createResult = await CustomerService.createCustomer(
+          name: customerName,
+        );
+
+        if (!createResult['success']) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  createResult['message'] ?? 'Failed to create customer',
+                ),
+                backgroundColor: AppColors.danger,
+              ),
+            );
+          }
+          return;
+        }
+
+        // Get the created customer ID and update balance
+        final createdCustomer = createResult['customer'];
+        _selectedCustomerId = createdCustomer['id'];
+        _customerCreditBalance = createdCustomer['balance'] ?? 0.0;
+      }
+
+      final amount = double.parse(_amountController.text);
+
+      // Check if debit exceeds customer credit balance
+      if (amount > _customerCreditBalance) {
+        _showCreditWarning(amount);
+        return;
+      }
+
+      await _proceedWithDebit(amount);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving debit: $e'),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
-
-    await _proceedWithDebit(amount);
   }
 
   Future<void> _proceedWithDebit(double amount) async {
@@ -292,51 +336,128 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
                 style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _customerController,
-                decoration: InputDecoration(
-                  hintText: 'Search or add customer',
-                  prefixIcon: const Icon(Icons.person),
-                  suffixIcon: _isLoadingCustomers
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : PopupMenuButton<String>(
-                          icon: const Icon(Icons.arrow_drop_down),
-                          onSelected: (String customerName) {
+              Autocomplete<String>(
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  if (textEditingValue.text.isEmpty) {
+                    return const Iterable<String>.empty();
+                  }
+                  return _customers
+                      .map((customer) => customer['name'] as String)
+                      .where((String option) {
+                        return option.toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
+                      });
+                },
+                onSelected: (String selection) {
+                  final customer = _customers.firstWhere(
+                    (c) => c['name'] == selection,
+                    orElse: () => <String, dynamic>{},
+                  );
+                  if (customer.isNotEmpty) {
+                    setState(() {
+                      _customerController.text = selection;
+                      _selectedCustomerId = customer['id'];
+                      _customerCreditBalance = customer['balance'] ?? 0.0;
+                    });
+                  } else {
+                    // If customer doesn't exist, we'll create it later
+                    setState(() {
+                      _customerController.text = selection;
+                      _selectedCustomerId = null; // Will be created on submit
+                      _customerCreditBalance = 0.0;
+                    });
+                  }
+                },
+                fieldViewBuilder:
+                    (
+                      BuildContext context,
+                      TextEditingController textEditingController,
+                      FocusNode focusNode,
+                      VoidCallback onFieldSubmitted,
+                    ) {
+                      return TextFormField(
+                        controller: textEditingController,
+                        focusNode: focusNode,
+                        decoration: InputDecoration(
+                          hintText: 'Type customer name or select from list',
+                          prefixIcon: const Icon(Icons.person),
+                          suffixIcon: _isLoadingCustomers
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    textEditingController.clear();
+                                    setState(() {
+                                      _selectedCustomerId = null;
+                                      _customerController.clear();
+                                      _customerCreditBalance = 0.0;
+                                    });
+                                  },
+                                ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a customer name';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          // Update our controller and reset selected customer ID when user types
+                          _customerController.text = value;
+                          if (_selectedCustomerId != null) {
                             final customer = _customers.firstWhere(
-                              (c) => c['name'] == customerName,
+                              (c) => c['name'] == value,
                               orElse: () => <String, dynamic>{},
                             );
-                            if (customer.isNotEmpty) {
+                            if (customer.isEmpty) {
                               setState(() {
-                                _customerController.text = customerName;
-                                _selectedCustomerId = customer['id'];
-                                _customerCreditBalance =
-                                    customer['balance'] ?? 0.0;
+                                _selectedCustomerId = null;
+                                _customerCreditBalance = 0.0;
                               });
                             }
-                          },
-                          itemBuilder: (BuildContext context) {
-                            return _customers.map((
-                              Map<String, dynamic> customer,
-                            ) {
-                              return PopupMenuItem<String>(
-                                value: customer['name'],
-                                child: Text(customer['name']),
-                              );
-                            }).toList();
-                          },
+                          }
+                        },
+                      );
+                    },
+                optionsViewBuilder:
+                    (
+                      BuildContext context,
+                      AutocompleteOnSelected<String> onSelected,
+                      Iterable<String> options,
+                    ) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 4.0,
+                          child: Container(
+                            constraints: const BoxConstraints(maxHeight: 200),
+                            width: MediaQuery.of(context).size.width - 48,
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              itemCount: options.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final String option = options.elementAt(index);
+                                return InkWell(
+                                  onTap: () => onSelected(option),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Text(option),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select or enter a customer';
-                  }
-                  return null;
-                },
+                      );
+                    },
               ),
 
               // Customer Balance Info
