@@ -34,6 +34,12 @@ func main() {
 	r.HandleFunc("/api/health", handlers.HealthCheck).Methods("GET")
 	r.HandleFunc("/api/profile", handlers.GetProfile).Methods("GET")
 
+	// Catch-all OPTIONS handler for CORS preflight requests
+	r.PathPrefix("/").Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// The corsMiddleware will already have set the necessary headers.
+		w.WriteHeader(http.StatusOK)
+	})
+
 	// Get server port
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
