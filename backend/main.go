@@ -34,6 +34,7 @@ func main() {
 	r.HandleFunc("/api/login", handlers.Login).Methods("POST")
 	r.HandleFunc("/api/health", handlers.HealthCheck).Methods("GET")
 	r.HandleFunc("/api/profile", handlers.GetProfile).Methods("GET")
+	r.HandleFunc("/api/dashboard", handlers.GetDashboardSummary).Methods("GET")
 
 	// Catch-all OPTIONS handler for CORS preflight requests
 	r.PathPrefix("/").Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

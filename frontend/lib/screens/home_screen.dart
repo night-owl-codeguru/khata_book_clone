@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../theme.dart';
 import '../services/auth_service.dart';
+import '../services/dashboard_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,45 +34,54 @@ class _HomeScreenState extends State<HomeScreen> {
       // Load user data
       _userData = await AuthService.getUserData();
 
-      // TODO: Load summary data from API
-      // For now, using mock data
-      _summaryData = {
-        'totalCredit': 12500.0,
-        'totalDebit': 8750.0,
-        'balance': 3750.0,
-      };
+      // Load dashboard data from API
+      final dashboardResult = await DashboardService.getDashboardSummary();
 
-      // TODO: Load latest entries from API
-      // For now, using mock data
-      _latestEntries = [
-        {
-          'id': '1',
-          'customer': 'Ramesh Traders',
-          'type': 'credit',
-          'amount': 2500.0,
-          'date': '2024-08-29',
-          'method': 'cash',
-        },
-        {
-          'id': '2',
-          'customer': 'Mohan Kirana',
-          'type': 'debit',
-          'amount': 1200.0,
-          'date': '2024-08-28',
-          'method': 'upi',
-        },
-        {
-          'id': '3',
-          'customer': 'Sita Textiles',
-          'type': 'credit',
-          'amount': 1800.0,
-          'date': '2024-08-27',
-          'method': 'bank',
-        },
-      ];
+      if (dashboardResult['success']) {
+        final data = dashboardResult['data'];
+        _summaryData = {
+          'totalCredit': data['total_credit'] ?? 0.0,
+          'totalDebit': data['total_debit'] ?? 0.0,
+          'balance': data['balance'] ?? 0.0,
+        };
+
+        // Process latest entries
+        final entries = data['latest_entries'] as List<dynamic>? ?? [];
+        _latestEntries = entries.map((entry) {
+          return {
+            'id': entry['id'],
+            'customer': entry['customer_name'] ?? 'Unknown Customer',
+            'type': entry['type'],
+            'amount': entry['amount'] ?? 0.0,
+            'date': entry['date'] ?? DateTime.now().toString().split('T')[0],
+            'method': entry['method'] ?? 'cash',
+          };
+        }).toList();
+      } else {
+        // Fallback to mock data if API fails
+        print('API failed: ${dashboardResult['message']}');
+        final mockData = DashboardService.getMockDashboardData();
+        _summaryData = {
+          'totalCredit': mockData['total_credit'],
+          'totalDebit': mockData['total_debit'],
+          'balance': mockData['balance'],
+        };
+        _latestEntries = List<Map<String, dynamic>>.from(
+          mockData['latest_entries'],
+        );
+      }
     } catch (e) {
-      // Handle error
+      // Handle error and use mock data as fallback
       print('Error loading data: $e');
+      final mockData = DashboardService.getMockDashboardData();
+      _summaryData = {
+        'totalCredit': mockData['total_credit'],
+        'totalDebit': mockData['total_debit'],
+        'balance': mockData['balance'],
+      };
+      _latestEntries = List<Map<String, dynamic>>.from(
+        mockData['latest_entries'],
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -207,26 +217,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Latest Entries',
-                                style: AppTypography.title.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () => context.go('/entries'),
-                                child: Text(
-                                  'View All',
-                                  style: AppTypography.body.copyWith(
-                                    color: AppColors.primary500,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          Text(
+                            'Latest Entries',
+                            style: AppTypography.title.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           const SizedBox(height: 12),
                         ],
