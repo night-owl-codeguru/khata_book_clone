@@ -28,7 +28,6 @@
 # Android generated files
 /frontend/android/.gradle
 /frontend/android/captures/
-/frontend/android/gradle.properties
 /frontend/android/gradlew
 /frontend/android/gradlew.bat
 /frontend/android/key.properties
@@ -37,6 +36,18 @@
 /frontend/android/app/debug
 /frontend/android/app/profile
 /frontend/android/app/release
+/frontend/android/output-metadata.json
+*.aab
+*.apk
+*.jks
+*.keystore
+
+# Google Services (e.g. APIs or Firebase)
+/frontend/android/app/google-services.json
+/frontend/ios/Runner/GoogleService-Info.plist
+
+# Android Profiling
+*.hprof
 
 # iOS generated files
 /frontend/ios/Flutter/flutter_export_environment.sh
@@ -158,6 +169,7 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+__MACOSX/
 
 # Windows
 Thumbs.db
