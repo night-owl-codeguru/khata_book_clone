@@ -47,7 +47,10 @@ func main() {
 	r.HandleFunc("/api/customers", handlers.CreateCustomer).Methods("POST")
 	r.HandleFunc("/api/customers/{id}", handlers.GetCustomer).Methods("GET")
 
-	// Reminder routes
+	// Ledger routes
+	r.HandleFunc("/api/ledger", handlers.GetLedgerEntries).Methods("GET")
+	r.HandleFunc("/api/ledger", handlers.CreateLedgerEntry).Methods("POST")
+	r.HandleFunc("/api/ledger/{id}", handlers.GetLedgerEntry).Methods("GET")
 	r.HandleFunc("/api/reminders", handlers.GetReminders).Methods("GET")
 	r.HandleFunc("/api/reminders", handlers.CreateReminder).Methods("POST")
 	r.HandleFunc("/api/reminders/{id}", handlers.UpdateReminder).Methods("PUT")
@@ -74,7 +77,8 @@ func corsMiddleware(next http.Handler) http.Handler {
 		// Set CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-User-ID")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-User-ID, Accept, Origin")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Max-Age", "3600")
 
 		// Handle preflight OPTIONS requests
