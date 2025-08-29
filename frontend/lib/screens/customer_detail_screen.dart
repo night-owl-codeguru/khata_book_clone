@@ -112,14 +112,16 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         return AlertDialog(
           title: Text(
             'Send Reminder',
-            style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Send a payment reminder to ${_customer?['name'] ?? 'this customer'}?',
-                style: AppTypography.body,
+                style: AppTypography.bodyWithColor(context),
               ),
               const SizedBox(height: 16),
               _buildReminderOption('SMS', Icons.sms, () {
@@ -143,8 +145,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textSecondary,
+                style: AppTypography.bodyWithColor(context).copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -160,18 +162,18 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.primary500, size: 20),
+            Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
             const SizedBox(width: 12),
-            Text(label, style: AppTypography.body),
+            Text(label, style: AppTypography.bodyWithColor(context)),
             const Spacer(),
             Icon(
               Icons.arrow_forward_ios,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               size: 16,
             ),
           ],
@@ -187,7 +189,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         content: Text(
           'Reminder sent via $channel to ${_customer?['name'] ?? 'customer'}',
         ),
-        backgroundColor: AppColors.success,
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -196,17 +198,22 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           elevation: 0,
           title: Text(
             'Customer Details',
-            style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
           leading: IconButton(
             onPressed: () => context.go('/customers'),
-            icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+            icon: Icon(
+              Icons.arrow_back,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -215,34 +222,45 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
     if (_error != null) {
       return Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           elevation: 0,
           title: Text(
             'Customer Details',
-            style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
           leading: IconButton(
             onPressed: () => context.go('/customers'),
-            icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+            icon: Icon(
+              Icons.arrow_back,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 64, color: AppColors.danger),
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Theme.of(context).colorScheme.error,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Error loading customer',
-                style: AppTypography.title.copyWith(color: AppColors.danger),
+                style: AppTypography.titleWithColor(
+                  context,
+                ).copyWith(color: Theme.of(context).colorScheme.error),
               ),
               const SizedBox(height: 8),
               Text(
                 _error!,
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textSecondary,
+                style: AppTypography.bodyWithColor(context).copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -263,17 +281,22 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     final isPositive = customerBalance >= 0;
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Text(
           customerName,
-          style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.titleWithColor(
+            context,
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           onPressed: () => context.go('/customers'),
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
         actions: [
           IconButton(
@@ -283,7 +306,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 const SnackBar(content: Text('Edit customer - Coming soon!')),
               );
             },
-            icon: Icon(Icons.edit, color: AppColors.primary500),
+            icon: Icon(
+              Icons.edit,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
         ],
       ),
@@ -293,8 +319,12 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              border: Border(bottom: BorderSide(color: AppColors.border)),
+              color: Theme.of(context).colorScheme.surface,
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
             ),
             child: Column(
               children: [
@@ -305,16 +335,19 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: AppColors.primary500.withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(32),
                       ),
                       child: Center(
                         child: Text(
                           customerName[0].toUpperCase(),
-                          style: AppTypography.headline.copyWith(
-                            color: AppColors.primary500,
-                            fontSize: 24,
-                          ),
+                          style: AppTypography.headlineWithColor(context)
+                              .copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontSize: 24,
+                              ),
                         ),
                       ),
                     ),
@@ -325,16 +358,19 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         children: [
                           Text(
                             customerName,
-                            style: AppTypography.title.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppTypography.titleWithColor(
+                              context,
+                            ).copyWith(fontWeight: FontWeight.w600),
                           ),
                           if (customerPhone != null && customerPhone.isNotEmpty)
                             Text(
                               customerPhone,
-                              style: AppTypography.body.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                              style: AppTypography.bodyWithColor(context)
+                                  .copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
                             ),
                         ],
                       ),
@@ -349,13 +385,21 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: isPositive
-                        ? AppColors.success.withValues(alpha: 0.1)
-                        : AppColors.danger.withValues(alpha: 0.1),
+                        ? Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.1)
+                        : Theme.of(
+                            context,
+                          ).colorScheme.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isPositive
-                          ? AppColors.success.withValues(alpha: 0.2)
-                          : AppColors.danger.withValues(alpha: 0.2),
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.2)
+                          : Theme.of(
+                              context,
+                            ).colorScheme.error.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Row(
@@ -365,8 +409,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                             ? Icons.account_balance_wallet
                             : Icons.warning,
                         color: isPositive
-                            ? AppColors.success
-                            : AppColors.danger,
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.error,
                         size: 24,
                       ),
                       const SizedBox(width: 12),
@@ -376,28 +420,30 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           children: [
                             Text(
                               'Net Balance',
-                              style: AppTypography.caption.copyWith(
-                                color: isPositive
-                                    ? AppColors.success
-                                    : AppColors.danger,
-                              ),
+                              style: AppTypography.captionWithColor(context)
+                                  .copyWith(
+                                    color: isPositive
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.error,
+                                  ),
                             ),
                             Text(
                               '${isPositive ? '+' : ''}₹${customerBalance.abs().toStringAsFixed(0)}',
-                              style: AppTypography.title.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: isPositive
-                                    ? AppColors.success
-                                    : AppColors.danger,
-                              ),
+                              style: AppTypography.titleWithColor(context)
+                                  .copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: isPositive
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.error,
+                                  ),
                             ),
                           ],
                         ),
                       ),
                       Text(
                         isPositive ? 'They owe you' : 'You owe them',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.textSecondary,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -413,7 +459,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       child: _buildQuickAction(
                         'Add Credit',
                         Icons.arrow_downward,
-                        AppColors.success,
+                        Theme.of(context).colorScheme.primary,
                         _showAddCreditDialog,
                       ),
                     ),
@@ -422,7 +468,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       child: _buildQuickAction(
                         'Add Debit',
                         Icons.arrow_upward,
-                        AppColors.danger,
+                        Theme.of(context).colorScheme.error,
                         _showAddDebitDialog,
                       ),
                     ),
@@ -431,7 +477,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       child: _buildQuickAction(
                         'Send Reminder',
                         Icons.notifications,
-                        AppColors.primary500,
+                        Theme.of(context).colorScheme.primary,
                         _showSendReminderDialog,
                       ),
                     ),
@@ -481,10 +527,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             const SizedBox(height: 4),
             Text(
               label,
-              style: AppTypography.caption.copyWith(
-                color: color,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTypography.captionWithColor(
+                context,
+              ).copyWith(color: color, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
           ],
@@ -495,7 +540,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   Widget _buildTransactionItem(Map<String, dynamic> transaction) {
     final isCredit = transaction['type'] == 'credit';
-    final color = isCredit ? AppColors.success : AppColors.danger;
+    final color = isCredit
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.error;
     final icon = isCredit ? Icons.arrow_downward : Icons.arrow_upward;
     final amount = transaction['amount'] ?? 0.0;
     final method = transaction['method'] ?? 'cash';
@@ -506,12 +553,12 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: Theme.of(context).colorScheme.shadow,
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -536,10 +583,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   children: [
                     Text(
                       isCredit ? 'Credit' : 'Debit',
-                      style: AppTypography.body.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: color,
-                      ),
+                      style: AppTypography.bodyWithColor(
+                        context,
+                      ).copyWith(fontWeight: FontWeight.w600, color: color),
                     ),
                     const SizedBox(width: 8),
                     Container(
@@ -548,13 +594,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceAlt,
+                        color: Theme.of(context).colorScheme.surfaceVariant,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         method.toUpperCase(),
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.textSecondary,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -563,15 +609,15 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 ),
                 Text(
                   date,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondary,
+                  style: AppTypography.captionWithColor(context).copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 if (note.isNotEmpty)
                   Text(
                     note,
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.textSecondary,
+                    style: AppTypography.captionWithColor(context).copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -580,10 +626,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
           Text(
             '${isCredit ? '+' : '-'}₹${amount.toStringAsFixed(0)}',
-            style: AppTypography.body.copyWith(
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+            style: AppTypography.bodyWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),
@@ -600,21 +645,23 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             Icon(
               Icons.receipt_long,
               size: 64,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
               'No transactions yet',
-              style: AppTypography.title.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.titleWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
             Text(
               'Add the first credit or debit for this customer',
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.bodyWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -624,8 +671,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 ElevatedButton(
                   onPressed: _showAddCreditDialog,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.success,
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
                   child: const Text('Add Credit'),
                 ),
@@ -633,8 +680,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 ElevatedButton(
                   onPressed: _showAddDebitDialog,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.danger,
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    foregroundColor: Theme.of(context).colorScheme.onError,
                   ),
                   child: const Text('Add Debit'),
                 ),

@@ -103,8 +103,10 @@ class _ReportsScreenState extends State<ReportsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: Theme.of(context).colorScheme.outline),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,15 +115,17 @@ class _ReportsScreenState extends State<ReportsScreen>
             children: [
               Text(
                 'Date Range',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const Spacer(),
               TextButton(
                 onPressed: _clearDateFilters,
                 child: Text(
                   'Clear',
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.primary500,
+                  style: AppTypography.captionWithColor(context).copyWith(
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -137,7 +141,9 @@ class _ReportsScreenState extends State<ReportsScreen>
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -145,7 +151,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                         Icon(
                           Icons.calendar_today,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -153,11 +159,14 @@ class _ReportsScreenState extends State<ReportsScreen>
                             _startDate != null
                                 ? '${_startDate!.day}/${_startDate!.month}/${_startDate!.year}'
                                 : 'Start Date',
-                            style: AppTypography.caption.copyWith(
-                              color: _startDate != null
-                                  ? AppColors.textPrimary
-                                  : AppColors.textSecondary,
-                            ),
+                            style: AppTypography.captionWithColor(context)
+                                .copyWith(
+                                  color: _startDate != null
+                                      ? Theme.of(context).colorScheme.onSurface
+                                      : Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                ),
                           ),
                         ),
                       ],
@@ -172,7 +181,9 @@ class _ReportsScreenState extends State<ReportsScreen>
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -180,7 +191,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                         Icon(
                           Icons.calendar_today,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -188,11 +199,14 @@ class _ReportsScreenState extends State<ReportsScreen>
                             _endDate != null
                                 ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}'
                                 : 'End Date',
-                            style: AppTypography.caption.copyWith(
-                              color: _endDate != null
-                                  ? AppColors.textPrimary
-                                  : AppColors.textSecondary,
-                            ),
+                            style: AppTypography.captionWithColor(context)
+                                .copyWith(
+                                  color: _endDate != null
+                                      ? Theme.of(context).colorScheme.onSurface
+                                      : Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                ),
                           ),
                         ),
                       ],
@@ -227,7 +241,9 @@ class _ReportsScreenState extends State<ReportsScreen>
           );
           if (result['success']) {
             _monthlyReports = List<Map<String, dynamic>>.from(
-              result['reports'],
+              result['reports'].map(
+                (report) => Map<String, dynamic>.from(report),
+              ),
             );
             _updateMonthlySummary();
           }
@@ -239,7 +255,9 @@ class _ReportsScreenState extends State<ReportsScreen>
           );
           if (result['success']) {
             _categoryReports = List<Map<String, dynamic>>.from(
-              result['reports'],
+              result['reports'].map(
+                (report) => Map<String, dynamic>.from(report),
+              ),
             );
             _updateCategorySummary();
           }
@@ -251,7 +269,9 @@ class _ReportsScreenState extends State<ReportsScreen>
           );
           if (result['success']) {
             _paymentMethodReports = List<Map<String, dynamic>>.from(
-              result['reports'],
+              result['reports'].map(
+                (report) => Map<String, dynamic>.from(report),
+              ),
             );
             _updatePaymentMethodSummary();
           }
@@ -306,7 +326,12 @@ class _ReportsScreenState extends State<ReportsScreen>
         'transactionCount': totalTransactions,
         'topCustomers': _categoryReports
             .take(3)
-            .map((c) => {'name': c['customer_name'], 'amount': c['balance']})
+            .map(
+              (c) => {
+                'name': c['customer_name']?.toString() ?? 'Unknown',
+                'amount': c['balance'] ?? 0.0,
+              },
+            )
             .toList(),
       };
     }
@@ -333,7 +358,7 @@ class _ReportsScreenState extends State<ReportsScreen>
             final percentage = totalAmount > 0
                 ? ((r['total_amount'] ?? 0.0) / totalAmount * 100).round()
                 : 0;
-            return MapEntry(r['method'], percentage);
+            return MapEntry(r['method']?.toString() ?? 'Unknown', percentage);
           }),
         ),
       };
@@ -354,14 +379,16 @@ class _ReportsScreenState extends State<ReportsScreen>
           children: [
             Text(
               'Export Report',
-              style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+              style: AppTypography.titleWithColor(
+                context,
+              ).copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
               'Choose export format',
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.bodyWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             _buildExportOption(
@@ -398,19 +425,23 @@ class _ReportsScreenState extends State<ReportsScreen>
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primary500.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: AppColors.primary500, size: 20),
+              child: Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -419,14 +450,14 @@ class _ReportsScreenState extends State<ReportsScreen>
                 children: [
                   Text(
                     title,
-                    style: AppTypography.body.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTypography.bodyWithColor(
+                      context,
+                    ).copyWith(fontWeight: FontWeight.w500),
                   ),
                   Text(
                     subtitle,
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.textSecondary,
+                    style: AppTypography.captionWithColor(context).copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -434,7 +465,7 @@ class _ReportsScreenState extends State<ReportsScreen>
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               size: 16,
             ),
           ],
@@ -542,29 +573,37 @@ class _ReportsScreenState extends State<ReportsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Text(
           'Reports',
-          style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.titleWithColor(
+            context,
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           onPressed: () => context.go('/home'),
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
         actions: [
           IconButton(
             onPressed: _toggleDateFilters,
             icon: Icon(
               _showDateFilters ? Icons.filter_list_off : Icons.filter_list,
-              color: AppColors.primary500,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
           IconButton(
             onPressed: () => _showExportDialog(),
-            icon: Icon(Icons.download, color: AppColors.primary500),
+            icon: Icon(
+              Icons.download,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
         ],
         bottom: TabBar(
@@ -603,20 +642,35 @@ class _ReportsScreenState extends State<ReportsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 64, color: AppColors.danger),
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Theme.of(context).colorScheme.error,
+          ),
           const SizedBox(height: 16),
           Text(
             'Failed to load reports',
-            style: AppTypography.title.copyWith(color: AppColors.danger),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(color: Theme.of(context).colorScheme.error),
           ),
           const SizedBox(height: 8),
           Text(
             _errorMessage ?? 'Unknown error',
-            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodyWithColor(
+              context,
+            ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          ElevatedButton(onPressed: _loadReports, child: const Text('Retry')),
+          ElevatedButton(
+            onPressed: _loadReports,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
+            child: const Text('Retry'),
+          ),
         ],
       ),
     );
@@ -635,7 +689,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                 child: _buildSummaryCard(
                   title: 'Total Credit',
                   amount: _reportData['totalCredit'] ?? 0.0,
-                  color: AppColors.success,
+                  color: Theme.of(context).colorScheme.primary,
                   icon: Icons.arrow_downward,
                 ),
               ),
@@ -644,7 +698,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                 child: _buildSummaryCard(
                   title: 'Total Debit',
                   amount: _reportData['totalDebit'] ?? 0.0,
-                  color: AppColors.danger,
+                  color: Theme.of(context).colorScheme.error,
                   icon: Icons.arrow_upward,
                 ),
               ),
@@ -656,7 +710,7 @@ class _ReportsScreenState extends State<ReportsScreen>
           _buildSummaryCard(
             title: 'Net Balance',
             amount: _reportData['balance'] ?? 0.0,
-            color: AppColors.primary500,
+            color: Theme.of(context).colorScheme.primary,
             icon: Icons.account_balance_wallet,
             isHighlighted: true,
           ),
@@ -666,7 +720,9 @@ class _ReportsScreenState extends State<ReportsScreen>
           // Monthly Breakdown
           Text(
             'Monthly Breakdown',
-            style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
           ..._monthlyReports.map((report) {
@@ -674,18 +730,20 @@ class _ReportsScreenState extends State<ReportsScreen>
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    report['month'] ?? 'Unknown Month',
-                    style: AppTypography.body.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    report['month']?.toString() ?? 'Unknown Month',
+                    style: AppTypography.bodyWithColor(
+                      context,
+                    ).copyWith(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -693,22 +751,22 @@ class _ReportsScreenState extends State<ReportsScreen>
                     children: [
                       Text(
                         'Credit: ₹${(report['total_credit'] ?? 0.0).toStringAsFixed(0)}',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.success,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       Text(
                         'Debit: ₹${(report['total_debit'] ?? 0.0).toStringAsFixed(0)}',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.danger,
-                        ),
+                        style: AppTypography.captionWithColor(
+                          context,
+                        ).copyWith(color: Theme.of(context).colorScheme.error),
                       ),
                       Text(
                         'Balance: ₹${(report['balance'] ?? 0.0).toStringAsFixed(0)}',
-                        style: AppTypography.caption.copyWith(
+                        style: AppTypography.captionWithColor(context).copyWith(
                           color: (report['balance'] ?? 0.0) >= 0
-                              ? AppColors.success
-                              : AppColors.danger,
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.error,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -736,7 +794,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                 child: _buildSummaryCard(
                   title: 'Total Credit',
                   amount: _reportData['totalCredit'] ?? 0.0,
-                  color: AppColors.success,
+                  color: Theme.of(context).colorScheme.primary,
                   icon: Icons.arrow_downward,
                 ),
               ),
@@ -745,7 +803,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                 child: _buildSummaryCard(
                   title: 'Total Debit',
                   amount: _reportData['totalDebit'] ?? 0.0,
-                  color: AppColors.danger,
+                  color: Theme.of(context).colorScheme.error,
                   icon: Icons.arrow_upward,
                 ),
               ),
@@ -757,7 +815,7 @@ class _ReportsScreenState extends State<ReportsScreen>
           _buildSummaryCard(
             title: 'Net Balance',
             amount: _reportData['balance'] ?? 0.0,
-            color: AppColors.primary500,
+            color: Theme.of(context).colorScheme.primary,
             icon: Icons.account_balance_wallet,
             isHighlighted: true,
           ),
@@ -767,7 +825,9 @@ class _ReportsScreenState extends State<ReportsScreen>
           // Customer Breakdown
           Text(
             'Customer Breakdown',
-            style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
           ..._categoryReports.map((report) {
@@ -775,9 +835,11 @@ class _ReportsScreenState extends State<ReportsScreen>
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -787,16 +849,17 @@ class _ReportsScreenState extends State<ReportsScreen>
                     children: [
                       Expanded(
                         child: Text(
-                          report['customer_name'] ?? 'Unknown Customer',
-                          style: AppTypography.body.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          report['customer_name']?.toString() ??
+                              'Unknown Customer',
+                          style: AppTypography.bodyWithColor(
+                            context,
+                          ).copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                       Text(
                         '${report['transaction_count'] ?? 0} transactions',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.textSecondary,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -807,22 +870,22 @@ class _ReportsScreenState extends State<ReportsScreen>
                     children: [
                       Text(
                         'Credit: ₹${(report['total_credit'] ?? 0.0).toStringAsFixed(0)}',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.success,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       Text(
                         'Debit: ₹${(report['total_debit'] ?? 0.0).toStringAsFixed(0)}',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.danger,
-                        ),
+                        style: AppTypography.captionWithColor(
+                          context,
+                        ).copyWith(color: Theme.of(context).colorScheme.error),
                       ),
                       Text(
                         'Balance: ₹${(report['balance'] ?? 0.0).toStringAsFixed(0)}',
-                        style: AppTypography.caption.copyWith(
+                        style: AppTypography.captionWithColor(context).copyWith(
                           color: (report['balance'] ?? 0.0) >= 0
-                              ? AppColors.success
-                              : AppColors.danger,
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.error,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -847,7 +910,7 @@ class _ReportsScreenState extends State<ReportsScreen>
           _buildSummaryCard(
             title: 'Total Transaction Amount',
             amount: _reportData['totalCredit'] ?? 0.0,
-            color: AppColors.primary500,
+            color: Theme.of(context).colorScheme.primary,
             icon: Icons.account_balance_wallet,
             isHighlighted: true,
           ),
@@ -857,13 +920,16 @@ class _ReportsScreenState extends State<ReportsScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: Theme.of(context).colorScheme.outline),
             ),
             child: Row(
               children: [
-                Icon(Icons.receipt_long, color: AppColors.primary500),
+                Icon(
+                  Icons.receipt_long,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -871,15 +937,15 @@ class _ReportsScreenState extends State<ReportsScreen>
                     children: [
                       Text(
                         'Total Transactions',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.textSecondary,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       Text(
                         (_reportData['transactionCount'] ?? 0).toString(),
-                        style: AppTypography.title.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTypography.titleWithColor(
+                          context,
+                        ).copyWith(fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -893,11 +959,13 @@ class _ReportsScreenState extends State<ReportsScreen>
           // Payment Methods Breakdown
           Text(
             'Payment Methods',
-            style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
           ..._paymentMethodReports.map((report) {
-            final method = report['method'] ?? 'Unknown';
+            final method = report['method']?.toString() ?? 'Unknown';
             final totalAmount = report['total_amount'] ?? 0.0;
             final transactionCount = report['transaction_count'] ?? 0;
             final averageAmount = report['average_amount'] ?? 0.0;
@@ -906,9 +974,11 @@ class _ReportsScreenState extends State<ReportsScreen>
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -918,14 +988,14 @@ class _ReportsScreenState extends State<ReportsScreen>
                     children: [
                       Text(
                         method.toUpperCase(),
-                        style: AppTypography.body.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTypography.bodyWithColor(
+                          context,
+                        ).copyWith(fontWeight: FontWeight.w600),
                       ),
                       Text(
                         '$transactionCount transactions',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.textSecondary,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -936,14 +1006,14 @@ class _ReportsScreenState extends State<ReportsScreen>
                     children: [
                       Text(
                         'Total: ₹${totalAmount.toStringAsFixed(0)}',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.primary500,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       Text(
                         'Average: ₹${averageAmount.toStringAsFixed(0)}',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.textSecondary,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -958,9 +1028,9 @@ class _ReportsScreenState extends State<ReportsScreen>
                                   as Map<String, dynamic>)[method] /
                               100)
                         : 0.0,
-                    backgroundColor: AppColors.border,
+                    backgroundColor: Theme.of(context).colorScheme.outline,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primary500,
+                      Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ],
@@ -982,13 +1052,15 @@ class _ReportsScreenState extends State<ReportsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isHighlighted ? color : AppColors.surface,
+        color: isHighlighted ? color : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isHighlighted ? color : AppColors.border),
+        border: Border.all(
+          color: isHighlighted ? color : Theme.of(context).colorScheme.outline,
+        ),
         boxShadow: isHighlighted
             ? [
                 BoxShadow(
-                  color: color.withValues(alpha: 0.2),
+                  color: color.withOpacity(0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -1000,12 +1072,20 @@ class _ReportsScreenState extends State<ReportsScreen>
         children: [
           Row(
             children: [
-              Icon(icon, color: isHighlighted ? Colors.white : color, size: 20),
+              Icon(
+                icon,
+                color: isHighlighted
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : color,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: AppTypography.caption.copyWith(
-                  color: isHighlighted ? Colors.white : AppColors.textSecondary,
+                style: AppTypography.captionWithColor(context).copyWith(
+                  color: isHighlighted
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -1013,9 +1093,11 @@ class _ReportsScreenState extends State<ReportsScreen>
           const SizedBox(height: 8),
           Text(
             '₹${amount.toStringAsFixed(0)}',
-            style: AppTypography.title.copyWith(
+            style: AppTypography.titleWithColor(context).copyWith(
               fontWeight: FontWeight.w600,
-              color: isHighlighted ? Colors.white : AppColors.textPrimary,
+              color: isHighlighted
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

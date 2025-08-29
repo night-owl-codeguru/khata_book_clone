@@ -8,17 +8,22 @@ class AddEntrySelectorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Text(
           'Add Entry',
-          style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.titleWithColor(
+            context,
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           onPressed: () => context.go('/home'),
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
       ),
       body: Padding(
@@ -28,25 +33,26 @@ class AddEntrySelectorScreen extends StatelessWidget {
           children: [
             Text(
               'What would you like to add?',
-              style: AppTypography.headline.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTypography.headlineWithColor(
+                context,
+              ).copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
               'Choose between a credit or debit entry',
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.bodyWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 48),
 
             // Credit Option
             _buildEntryOption(
+              context: context,
               title: 'Add Credit',
               subtitle: 'Record money received from a customer',
               icon: Icons.arrow_downward,
-              color: AppColors.success,
+              color: Theme.of(context).colorScheme.primary,
               onTap: () => context.go('/add/credit'),
             ),
 
@@ -54,10 +60,11 @@ class AddEntrySelectorScreen extends StatelessWidget {
 
             // Debit Option
             _buildEntryOption(
+              context: context,
               title: 'Add Debit',
               subtitle: 'Record money paid to a customer',
               icon: Icons.arrow_upward,
-              color: AppColors.danger,
+              color: Theme.of(context).colorScheme.error,
               onTap: () => context.go('/add/debit'),
             ),
 
@@ -66,12 +73,15 @@ class AddEntrySelectorScreen extends StatelessWidget {
             // Recent Entries Section
             Text(
               'Recent Entries',
-              style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+              style: AppTypography.titleWithColor(
+                context,
+              ).copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
 
             // Recent entries list (mock data for now)
             _buildRecentEntry(
+              context: context,
               customer: 'Ramesh Traders',
               type: 'credit',
               amount: 2500.0,
@@ -79,6 +89,7 @@ class AddEntrySelectorScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _buildRecentEntry(
+              context: context,
               customer: 'Mohan Kirana',
               type: 'debit',
               amount: 1200.0,
@@ -86,6 +97,7 @@ class AddEntrySelectorScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _buildRecentEntry(
+              context: context,
               customer: 'Sita Textiles',
               type: 'credit',
               amount: 1800.0,
@@ -98,6 +110,7 @@ class AddEntrySelectorScreen extends StatelessWidget {
   }
 
   Widget _buildEntryOption({
+    required BuildContext context,
     required String title,
     required String subtitle,
     required IconData icon,
@@ -110,12 +123,12 @@ class AddEntrySelectorScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadow,
+              color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -126,7 +139,7 @@ class AddEntrySelectorScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 24),
@@ -138,15 +151,15 @@ class AddEntrySelectorScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTypography.title.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTypography.titleWithColor(
+                      context,
+                    ).copyWith(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: AppTypography.body.copyWith(
-                      color: AppColors.textSecondary,
+                    style: AppTypography.bodyWithColor(context).copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -154,7 +167,7 @@ class AddEntrySelectorScreen extends StatelessWidget {
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               size: 16,
             ),
           ],
@@ -164,29 +177,32 @@ class AddEntrySelectorScreen extends StatelessWidget {
   }
 
   Widget _buildRecentEntry({
+    required BuildContext context,
     required String customer,
     required String type,
     required double amount,
     required String date,
   }) {
     final isCredit = type == 'credit';
-    final color = isCredit ? AppColors.success : AppColors.danger;
+    final color = isCredit
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.error;
     final icon = isCredit ? Icons.arrow_downward : Icons.arrow_upward;
     final prefix = isCredit ? '+' : '-';
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 16),
@@ -198,14 +214,14 @@ class AddEntrySelectorScreen extends StatelessWidget {
               children: [
                 Text(
                   customer,
-                  style: AppTypography.body.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTypography.bodyWithColor(
+                    context,
+                  ).copyWith(fontWeight: FontWeight.w500),
                 ),
                 Text(
                   date,
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondary,
+                  style: AppTypography.captionWithColor(context).copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -213,10 +229,9 @@ class AddEntrySelectorScreen extends StatelessWidget {
           ),
           Text(
             '$prefix₹${amount.toStringAsFixed(0)}',
-            style: AppTypography.body.copyWith(
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+            style: AppTypography.bodyWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),

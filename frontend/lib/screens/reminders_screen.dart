@@ -28,17 +28,22 @@ class _RemindersScreenState extends State<RemindersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Text(
           'Reminders',
-          style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.titleWithColor(
+            context,
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           onPressed: () => context.go('/home'),
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -47,9 +52,9 @@ class _RemindersScreenState extends State<RemindersScreen>
             Tab(text: 'Sent'),
             Tab(text: 'Paid'),
           ],
-          labelColor: AppColors.primary500,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.primary500,
+          labelColor: Theme.of(context).colorScheme.primary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          indicatorColor: Theme.of(context).colorScheme.primary,
         ),
       ),
       body: TabBarView(
@@ -168,12 +173,12 @@ class _RemindersScreenState extends State<RemindersScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -190,14 +195,14 @@ class _RemindersScreenState extends State<RemindersScreen>
                   children: [
                     Text(
                       reminder['customer'],
-                      style: AppTypography.body.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTypography.bodyWithColor(
+                        context,
+                      ).copyWith(fontWeight: FontWeight.w600),
                     ),
                     Text(
                       '₹${reminder['amount'].toStringAsFixed(0)} due on ${reminder['dueDate']}',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.textSecondary,
+                      style: AppTypography.captionWithColor(context).copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -206,12 +211,12 @@ class _RemindersScreenState extends State<RemindersScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(status).withValues(alpha: 0.1),
+                  color: _getStatusColor(status).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   status.toUpperCase(),
-                  style: AppTypography.caption.copyWith(
+                  style: AppTypography.captionWithColor(context).copyWith(
                     color: _getStatusColor(status),
                     fontWeight: FontWeight.w600,
                   ),
@@ -225,21 +230,21 @@ class _RemindersScreenState extends State<RemindersScreen>
               Icon(
                 _getChannelIcon(reminder['channel']),
                 size: 16,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: 4),
               Text(
                 reminder['channel'].toString().toUpperCase(),
-                style: AppTypography.caption.copyWith(
-                  color: AppColors.textSecondary,
+                style: AppTypography.captionWithColor(context).copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
               if (reminder['lastReminder'] != null) ...[
                 const SizedBox(width: 12),
                 Text(
                   'Last sent: ${reminder['lastReminder']}',
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondary,
+                  style: AppTypography.captionWithColor(context).copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -247,9 +252,9 @@ class _RemindersScreenState extends State<RemindersScreen>
                 const SizedBox(width: 12),
                 Text(
                   'Paid: ${reminder['paidDate']}',
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.success,
-                  ),
+                  style: AppTypography.captionWithColor(
+                    context,
+                  ).copyWith(color: Theme.of(context).colorScheme.primary),
                 ),
               ],
             ],
@@ -262,15 +267,17 @@ class _RemindersScreenState extends State<RemindersScreen>
                   child: OutlinedButton(
                     onPressed: () => _sendReminder(reminder),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.primary500),
-                      foregroundColor: AppColors.primary500,
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      foregroundColor: Theme.of(context).colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                     child: Text(
                       'Send Reminder',
-                      style: AppTypography.caption.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTypography.captionWithColor(
+                        context,
+                      ).copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -279,15 +286,17 @@ class _RemindersScreenState extends State<RemindersScreen>
                   child: OutlinedButton(
                     onPressed: () => _markAsPaid(reminder),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.success),
-                      foregroundColor: AppColors.success,
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      foregroundColor: Theme.of(context).colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                     child: Text(
                       'Mark Paid',
-                      style: AppTypography.caption.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTypography.captionWithColor(
+                        context,
+                      ).copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -320,21 +329,23 @@ class _RemindersScreenState extends State<RemindersScreen>
             Icon(
               Icons.notifications_none,
               size: 64,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurfaceVariant.withOpacity(0.5),
             ),
             const SizedBox(height: 16),
             Text(
               title,
-              style: AppTypography.title.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.titleWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.bodyWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
           ],
@@ -346,13 +357,13 @@ class _RemindersScreenState extends State<RemindersScreen>
   Color _getStatusColor(String status) {
     switch (status) {
       case 'pending':
-        return AppColors.danger;
+        return Theme.of(context).colorScheme.error;
       case 'sent':
-        return AppColors.primary500;
+        return Theme.of(context).colorScheme.primary;
       case 'paid':
-        return AppColors.success;
+        return Theme.of(context).colorScheme.primary;
       default:
-        return AppColors.textSecondary;
+        return Theme.of(context).colorScheme.onSurfaceVariant;
     }
   }
 
@@ -376,7 +387,7 @@ class _RemindersScreenState extends State<RemindersScreen>
         content: Text(
           'Reminder sent to ${reminder['customer']} via ${reminder['channel']}',
         ),
-        backgroundColor: AppColors.success,
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -386,7 +397,7 @@ class _RemindersScreenState extends State<RemindersScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${reminder['customer']} marked as paid'),
-        backgroundColor: AppColors.success,
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }

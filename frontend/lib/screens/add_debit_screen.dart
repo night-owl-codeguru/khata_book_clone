@@ -88,7 +88,7 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please enter a customer name'),
-          backgroundColor: AppColors.danger,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
@@ -110,7 +110,7 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
                 content: Text(
                   createResult['message'] ?? 'Failed to create customer',
                 ),
-                backgroundColor: AppColors.danger,
+                backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
           }
@@ -137,7 +137,7 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error saving debit: $e'),
-            backgroundColor: AppColors.danger,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -170,7 +170,7 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Debit saved successfully!'),
-              backgroundColor: AppColors.success,
+              backgroundColor: Theme.of(context).colorScheme.primary,
             ),
           );
 
@@ -182,7 +182,7 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(result['message'] ?? 'Error saving debit'),
-              backgroundColor: AppColors.danger,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -192,7 +192,7 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error saving debit: $e'),
-            backgroundColor: AppColors.danger,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -210,7 +210,9 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
         return AlertDialog(
           title: Text(
             'Credit Limit Warning',
-            style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -218,22 +220,26 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
             children: [
               Text(
                 'The debit amount (₹${debitAmount.toStringAsFixed(0)}) exceeds the customer\'s current credit balance (₹${_customerCreditBalance.toStringAsFixed(0)}).',
-                style: AppTypography.body,
+                style: AppTypography.bodyWithColor(context),
               ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.danger.withValues(alpha: 0.1),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.danger.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.error.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Text(
                   'This will result in a negative balance for the customer.',
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.danger,
+                  style: AppTypography.captionWithColor(context).copyWith(
+                    color: Theme.of(context).colorScheme.error,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -245,8 +251,8 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textSecondary,
+                style: AppTypography.bodyWithColor(context).copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -256,8 +262,8 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
                 _proceedWithDebit(debitAmount);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
               child: const Text('Proceed Anyway'),
             ),
@@ -270,17 +276,22 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Text(
           'Add Debit',
-          style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.titleWithColor(
+            context,
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           onPressed: () => context.go('/add'),
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
       ),
       body: Form(
@@ -294,15 +305,23 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.danger.withValues(alpha: 0.1),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.danger.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.error.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.arrow_upward, color: AppColors.danger, size: 24),
+                    Icon(
+                      Icons.arrow_upward,
+                      color: Theme.of(context).colorScheme.error,
+                      size: 24,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -310,16 +329,20 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
                         children: [
                           Text(
                             'Recording a Debit',
-                            style: AppTypography.body.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.danger,
-                            ),
+                            style: AppTypography.bodyWithColor(context)
+                                .copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
                           ),
                           Text(
                             'Money paid to customer',
-                            style: AppTypography.caption.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                            style: AppTypography.captionWithColor(context)
+                                .copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                           ),
                         ],
                       ),
@@ -333,7 +356,9 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
               // Customer Field
               Text(
                 'Customer',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Autocomplete<String>(
@@ -466,24 +491,28 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
                   margin: const EdgeInsets.only(top: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppColors.success.withValues(alpha: 0.2),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         Icons.account_balance_wallet,
-                        color: AppColors.success,
+                        color: Theme.of(context).colorScheme.primary,
                         size: 16,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Current Credit Balance: ₹${_customerCreditBalance.toStringAsFixed(0)}',
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.success,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -496,7 +525,9 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
               // Amount Field
               Text(
                 'Amount (₹)',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -523,12 +554,16 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
               // Payment Method
               Text(
                 'Payment Method',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -541,20 +576,21 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.primary500
-                                : Colors.transparent,
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(
                               method == _paymentMethods.first ? 12 : 0,
                             ),
                           ),
                           child: Text(
                             method.toUpperCase(),
-                            style: AppTypography.caption.copyWith(
-                              color: isSelected
-                                  ? Colors.white
-                                  : AppColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppTypography.captionWithColor(context)
+                                .copyWith(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.onPrimary
+                                      : Theme.of(context).colorScheme.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -569,7 +605,9 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
               // Date Field
               Text(
                 'Date',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               InkWell(
@@ -577,7 +615,9 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -586,12 +626,12 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
                       const SizedBox(width: 12),
                       Text(
                         '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                        style: AppTypography.body,
+                        style: AppTypography.bodyWithColor(context),
                       ),
                       const Spacer(),
                       Icon(
                         Icons.arrow_drop_down,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ],
                   ),
@@ -603,7 +643,9 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
               // Note Field
               Text(
                 'Note (Optional)',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -622,20 +664,22 @@ class _AddDebitScreenState extends State<AddDebitScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary500,
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? CircularProgressIndicator(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        )
                       : Text(
                           'Save Debit',
-                          style: AppTypography.body.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTypography.bodyWithColor(
+                            context,
+                          ).copyWith(fontWeight: FontWeight.w600),
                         ),
                 ),
               ),

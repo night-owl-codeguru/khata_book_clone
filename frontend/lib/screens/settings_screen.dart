@@ -37,17 +37,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Text(
           'Settings',
-          style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.titleWithColor(
+            context,
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           onPressed: () => context.go('/home'),
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
       ),
       body: ListView(
@@ -208,8 +213,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: ElevatedButton(
               onPressed: () => _showLogoutDialog(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -217,7 +222,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               child: Text(
                 'Logout',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -233,9 +240,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
       child: Text(
         title,
-        style: AppTypography.title.copyWith(
+        style: AppTypography.titleWithColor(context).copyWith(
           fontWeight: FontWeight.w600,
-          color: AppColors.primary500,
+          color: Theme.of(context).colorScheme.primary,
         ),
       ),
     );
@@ -254,19 +261,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(16.0),
         margin: const EdgeInsets.symmetric(horizontal: 16.0),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primary500.withValues(alpha: 0.1),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: AppColors.primary500, size: 20),
+              child: Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -275,14 +288,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: AppTypography.body.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTypography.bodyWithColor(
+                      context,
+                    ).copyWith(fontWeight: FontWeight.w500),
                   ),
                   Text(
                     subtitle,
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.textSecondary,
+                    style: AppTypography.captionWithColor(context).copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -292,7 +305,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (trailing == null)
               Icon(
                 Icons.arrow_forward_ios,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 size: 16,
               ),
           ],
@@ -307,7 +320,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Edit $title'),
+          title: Text(
+            'Edit $title',
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
+          ),
           content: TextField(
             controller: controller,
             decoration: InputDecoration(hintText: 'Enter $title'),
@@ -315,7 +333,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: AppTypography.bodyWithColor(context).copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -325,7 +348,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   SnackBar(content: Text('$title updated successfully')),
                 );
               },
-              child: const Text('Save'),
+              child: Text(
+                'Save',
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         );
@@ -344,7 +372,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('Select Language'),
+          title: Text(
+            'Select Language',
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
+          ),
           children: availableLanguages.map((language) {
             final isSelected =
                 languageProvider.locale.languageCode == language['code'];
@@ -362,10 +395,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               child: Row(
                 children: [
-                  Text(language['name']!),
+                  Text(
+                    language['name']!,
+                    style: AppTypography.bodyWithColor(context),
+                  ),
                   if (isSelected) ...[
                     const SizedBox(width: 8),
-                    Icon(Icons.check, color: AppColors.primary500, size: 20),
+                    Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
                   ],
                 ],
               ),
@@ -382,7 +422,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('Select Currency'),
+          title: Text(
+            'Select Currency',
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
+          ),
           children: currencies.map((currency) {
             return SimpleDialogOption(
               onPressed: () {
@@ -391,7 +436,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   SnackBar(content: Text('Currency changed to $currency')),
                 );
               },
-              child: Text(currency),
+              child: Text(
+                currency,
+                style: AppTypography.bodyWithColor(context),
+              ),
             );
           }).toList(),
         );
@@ -408,7 +456,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('Select Theme'),
+          title: Text(
+            'Select Theme',
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
+          ),
           children: List.generate(themes.length, (index) {
             final theme = themes[index];
             final mode = themeModes[index];
@@ -426,10 +479,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               child: Row(
                 children: [
-                  Text(theme),
+                  Text(theme, style: AppTypography.bodyWithColor(context)),
                   if (isSelected) ...[
                     const SizedBox(width: 8),
-                    Icon(Icons.check, color: AppColors.primary500, size: 20),
+                    Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 20,
+                    ),
                   ],
                 ],
               ),
@@ -469,12 +526,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Logout'),
-          content: const Text('Are you sure you want to logout?'),
+          title: Text(
+            'Logout',
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
+          ),
+          content: Text(
+            'Are you sure you want to logout?',
+            style: AppTypography.bodyWithColor(context),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: AppTypography.bodyWithColor(context).copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -487,10 +557,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
-              child: const Text('Logout'),
+              child: Text(
+                'Logout',
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         );
@@ -649,14 +724,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text(
               'Restore from Backup',
-              style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+              style: AppTypography.titleWithColor(
+                context,
+              ).copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
               'Choose a backup file to restore',
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.bodyWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             Expanded(
@@ -671,9 +748,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     return Center(
                       child: Text(
                         'Error loading backups: ${snapshot.error}',
-                        style: AppTypography.body.copyWith(
-                          color: AppColors.danger,
-                        ),
+                        style: AppTypography.bodyWithColor(
+                          context,
+                        ).copyWith(color: Theme.of(context).colorScheme.error),
                       ),
                     );
                   }
@@ -688,23 +765,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Icon(
                             Icons.backup,
                             size: 64,
-                            color: AppColors.textSecondary.withValues(
-                              alpha: 0.5,
-                            ),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withValues(alpha: 0.5),
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'No backups found',
-                            style: AppTypography.title.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                            style: AppTypography.titleWithColor(context)
+                                .copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Create a backup first to see it here',
-                            style: AppTypography.body.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                            style: AppTypography.bodyWithColor(context)
+                                .copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -720,23 +804,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
                         ),
                         child: Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppColors.primary500.withValues(
-                                  alpha: 0.1,
-                                ),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
                                 Icons.backup,
-                                color: AppColors.primary500,
+                                color: Theme.of(context).colorScheme.primary,
                                 size: 20,
                               ),
                             ),
@@ -747,21 +833,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 children: [
                                   Text(
                                     backup['fileName'],
-                                    style: AppTypography.body.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                    style: AppTypography.bodyWithColor(
+                                      context,
+                                    ).copyWith(fontWeight: FontWeight.w500),
                                   ),
                                   Text(
                                     'Created: ${_formatDate(backup['timestamp'])}',
-                                    style: AppTypography.caption.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
+                                    style:
+                                        AppTypography.captionWithColor(
+                                          context,
+                                        ).copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
                                   ),
                                   Text(
                                     'Size: ${_formatFileSize(backup['size'])}',
-                                    style: AppTypography.caption.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
+                                    style:
+                                        AppTypography.captionWithColor(
+                                          context,
+                                        ).copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -825,22 +921,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Confirm Restore'),
-          content: const Text(
+          title: Text(
+            'Confirm Restore',
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
+          ),
+          content: Text(
             'This will replace all current data with the backup. This action cannot be undone. Continue?',
+            style: AppTypography.bodyWithColor(context),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: AppTypography.bodyWithColor(context).copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
-              child: const Text('Restore'),
+              child: Text(
+                'Restore',
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         ),
@@ -894,22 +1006,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Delete Backup'),
-          content: const Text(
+          title: Text(
+            'Delete Backup',
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
+          ),
+          content: Text(
             'Are you sure you want to delete this backup file?',
+            style: AppTypography.bodyWithColor(context),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: AppTypography.bodyWithColor(context).copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
-              child: const Text('Delete'),
+              child: Text(
+                'Delete',
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         ),

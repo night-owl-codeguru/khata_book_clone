@@ -108,8 +108,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textSecondary,
+                style: AppTypography.bodyWithColor(context).copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -123,14 +123,14 @@ class _CustomersScreenState extends State<CustomersScreen> {
                       content: Text(
                         'Customer "${nameController.text}" added successfully!',
                       ),
-                      backgroundColor: AppColors.success,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                     ),
                   );
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary500,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
               child: const Text('Add Customer'),
             ),
@@ -143,22 +143,30 @@ class _CustomersScreenState extends State<CustomersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Text(
           'Customers',
-          style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.titleWithColor(
+            context,
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           onPressed: () => context.go('/home'),
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
         actions: [
           IconButton(
             onPressed: _showAddCustomerDialog,
-            icon: Icon(Icons.person_add, color: AppColors.primary500),
+            icon: Icon(
+              Icons.person_add,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
         ],
       ),
@@ -194,9 +202,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
               '${_filteredCustomers.length} customer${_filteredCustomers.length != 1 ? 's' : ''}',
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.captionWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
 
@@ -258,12 +266,12 @@ class _CustomersScreenState extends State<CustomersScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -284,14 +292,14 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.primary500.withValues(alpha: 0.1),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Center(
                   child: Text(
                     customer['name'].toString()[0].toUpperCase(),
-                    style: AppTypography.title.copyWith(
-                      color: AppColors.primary500,
+                    style: AppTypography.titleWithColor(context).copyWith(
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -307,22 +315,22 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   children: [
                     Text(
                       customer['name'],
-                      style: AppTypography.body.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTypography.bodyWithColor(
+                        context,
+                      ).copyWith(fontWeight: FontWeight.w600),
                     ),
                     if (customer['phone'] != null &&
                         customer['phone'].isNotEmpty)
                       Text(
                         customer['phone'],
-                        style: AppTypography.caption.copyWith(
-                          color: AppColors.textSecondary,
+                        style: AppTypography.captionWithColor(context).copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     Text(
                       'Last transaction: ${customer['lastTransaction']}',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.textSecondary,
+                      style: AppTypography.captionWithColor(context).copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -340,24 +348,28 @@ class _CustomersScreenState extends State<CustomersScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: isPositive
-                          ? AppColors.success.withValues(alpha: 0.1)
-                          : AppColors.danger.withValues(alpha: 0.1),
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.1)
+                          : Theme.of(
+                              context,
+                            ).colorScheme.error.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       '${isPositive ? '+' : ''}₹${balance.abs().toStringAsFixed(0)}',
-                      style: AppTypography.caption.copyWith(
+                      style: AppTypography.captionWithColor(context).copyWith(
                         color: isPositive
-                            ? AppColors.success
-                            : AppColors.danger,
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.error,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                   Text(
                     isPositive ? 'They owe you' : 'You owe them',
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.textSecondary,
+                    style: AppTypography.captionWithColor(context).copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -379,23 +391,25 @@ class _CustomersScreenState extends State<CustomersScreen> {
             Icon(
               Icons.people_outline,
               size: 64,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurfaceVariant.withOpacity(0.5),
             ),
             const SizedBox(height: 16),
             Text(
               _searchQuery.isEmpty ? 'No customers yet' : 'No customers found',
-              style: AppTypography.title.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.titleWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
             Text(
               _searchQuery.isEmpty
                   ? 'Add your first customer to start tracking transactions'
                   : 'Try adjusting your search terms',
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.bodyWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -403,8 +417,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
               ElevatedButton(
                 onPressed: _showAddCustomerDialog,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary500,
-                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,
@@ -415,9 +429,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 ),
                 child: Text(
                   'Add Customer',
-                  style: AppTypography.body.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTypography.bodyWithColor(
+                    context,
+                  ).copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
           ],

@@ -92,29 +92,34 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Welcome back!',
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.captionWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             Text(
               _userData?['name'] ?? 'User',
-              style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+              style: AppTypography.titleWithColor(
+                context,
+              ).copyWith(fontWeight: FontWeight.w600),
             ),
           ],
         ),
         actions: [
           IconButton(
             onPressed: () => context.go('/settings'),
-            icon: Icon(Icons.settings_outlined, color: AppColors.textSecondary),
+            icon: Icon(
+              Icons.settings_outlined,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -173,9 +178,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             'Quick Actions',
-                            style: AppTypography.title.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppTypography.titleWithColor(
+                              context,
+                            ).copyWith(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 12),
                           Row(
@@ -219,9 +224,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             'Latest Entries',
-                            style: AppTypography.title.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppTypography.titleWithColor(
+                              context,
+                            ).copyWith(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 12),
                         ],
@@ -286,8 +291,8 @@ class _HomeScreenState extends State<HomeScreen> {
       // FAB for Add Entry
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.go('/add'),
-        backgroundColor: AppColors.primary500,
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
@@ -303,10 +308,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isHighlighted ? color : AppColors.surface,
+        color: isHighlighted ? color : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isHighlighted ? color : AppColors.border,
+          color: isHighlighted ? color : Theme.of(context).colorScheme.outline,
           width: isHighlighted ? 0 : 1,
         ),
         boxShadow: isHighlighted
@@ -342,17 +347,19 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   title,
-                  style: AppTypography.caption.copyWith(
+                  style: AppTypography.captionWithColor(context).copyWith(
                     color: isHighlighted
                         ? Colors.white
-                        : AppColors.textSecondary,
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 Text(
                   '₹${amount.toStringAsFixed(0)}',
-                  style: AppTypography.title.copyWith(
+                  style: AppTypography.titleWithColor(context).copyWith(
                     fontWeight: FontWeight.w600,
-                    color: isHighlighted ? Colors.white : AppColors.textPrimary,
+                    color: isHighlighted
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -374,19 +381,19 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.primary500, size: 24),
+            Icon(icon, color: Theme.of(context).colorScheme.primary, size: 24),
             const SizedBox(height: 8),
             Text(
               title,
-              style: AppTypography.caption.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTypography.captionWithColor(
+                context,
+              ).copyWith(fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
           ],
@@ -404,9 +411,9 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: const EdgeInsets.only(bottom: 8, left: 16, right: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       child: Row(
         children: [
@@ -425,14 +432,14 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   entry['customer'],
-                  style: AppTypography.body.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTypography.bodyWithColor(
+                    context,
+                  ).copyWith(fontWeight: FontWeight.w500),
                 ),
                 Text(
                   '${entry['date']} • ${entry['method']}',
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondary,
+                  style: AppTypography.captionWithColor(context).copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -440,10 +447,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Text(
             '${isCredit ? '+' : '-'}₹${entry['amount'].toStringAsFixed(0)}',
-            style: AppTypography.body.copyWith(
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+            style: AppTypography.bodyWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),
@@ -458,25 +464,31 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(
             Icons.receipt_long,
             size: 64,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
             'No entries yet',
-            style: AppTypography.title.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 8),
           Text(
             'Add your first credit or debit to get started',
-            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodyWithColor(
+              context,
+            ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => context.go('/add'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary500,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -484,7 +496,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Text(
               'Add Entry',
-              style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+              style: AppTypography.bodyWithColor(
+                context,
+              ).copyWith(fontWeight: FontWeight.w600),
             ),
           ),
         ],

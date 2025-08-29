@@ -39,7 +39,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final isLargeScreen = screenWidth > 600; // Tablet/Web breakpoint
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Row(
         children: [
           // Sidebar for large screens
@@ -65,8 +65,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return Container(
       width: 280,
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(right: BorderSide(color: AppColors.border, width: 1)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          right: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
+            width: 1,
+          ),
+        ),
       ),
       child: Column(
         children: [
@@ -75,7 +80,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: AppColors.border, width: 1),
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outline,
+                  width: 1,
+                ),
               ),
             ),
             child: Row(
@@ -101,9 +109,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 const SizedBox(width: 12),
                 Text(
                   'LedgerBook',
-                  style: AppTypography.title.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTypography.titleWithColor(
+                    context,
+                  ).copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -154,8 +162,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               icon: const Icon(Icons.add),
               label: const Text('Add Entry'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary500,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 minimumSize: const Size(double.infinity, 48),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -182,7 +190,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary500.withValues(alpha: 0.1)
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
@@ -191,17 +199,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             Icon(
               icon,
               color: isSelected
-                  ? AppColors.primary500
-                  : AppColors.textSecondary,
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
               size: 20,
             ),
             const SizedBox(width: 12),
             Text(
               label,
-              style: AppTypography.body.copyWith(
+              style: AppTypography.bodyWithColor(context).copyWith(
                 color: isSelected
-                    ? AppColors.primary500
-                    : AppColors.textSecondary,
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -216,9 +224,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       currentIndex: _selectedIndex,
       onTap: _onItemTapped,
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: AppColors.primary500,
-      unselectedItemColor: AppColors.textSecondary,
-      backgroundColor: AppColors.surface,
+      selectedItemColor: Theme.of(context).colorScheme.primary,
+      unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       elevation: 8,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
@@ -239,8 +247,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       onPressed: () {
         // TODO: Navigate to add entry screen
       },
-      backgroundColor: AppColors.primary500,
-      child: const Icon(Icons.add, color: Colors.white),
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      child: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
     );
   }
 }

@@ -177,9 +177,9 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
                 children: [
                   Text(
                     'Filters',
-                    style: AppTypography.title.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTypography.titleWithColor(
+                      context,
+                    ).copyWith(fontWeight: FontWeight.w600),
                   ),
                   const Spacer(),
                   TextButton(
@@ -195,9 +195,9 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
                     },
                     child: Text(
                       'Clear All',
-                      style: AppTypography.body.copyWith(
-                        color: AppColors.primary500,
-                      ),
+                      style: AppTypography.bodyWithColor(
+                        context,
+                      ).copyWith(color: Theme.of(context).colorScheme.primary),
                     ),
                   ),
                 ],
@@ -207,7 +207,9 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
               // Entry Type Filter
               Text(
                 'Entry Type',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -222,9 +224,11 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
                       this.setState(() {});
                       _applyFilters();
                     },
-                    backgroundColor: AppColors.surface,
-                    selectedColor: AppColors.primary500.withValues(alpha: 0.1),
-                    checkmarkColor: AppColors.primary500,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    selectedColor: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
+                    checkmarkColor: Theme.of(context).colorScheme.primary,
                   );
                 }).toList(),
               ),
@@ -234,7 +238,9 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
               // Payment Method Filter
               Text(
                 'Payment Method',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -249,9 +255,11 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
                       this.setState(() {});
                       _applyFilters();
                     },
-                    backgroundColor: AppColors.surface,
-                    selectedColor: AppColors.primary500.withValues(alpha: 0.1),
-                    checkmarkColor: AppColors.primary500,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    selectedColor: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
+                    checkmarkColor: Theme.of(context).colorScheme.primary,
                   );
                 }).toList(),
               ),
@@ -261,7 +269,9 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
               // Date Range Filter
               Text(
                 'Date Range',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Row(
@@ -284,14 +294,16 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           _startDate != null
                               ? '${_startDate!.day}/${_startDate!.month}/${_startDate!.year}'
                               : 'Start Date',
-                          style: AppTypography.caption,
+                          style: AppTypography.captionWithColor(context),
                         ),
                       ),
                     ),
@@ -315,14 +327,16 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           _endDate != null
                               ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}'
                               : 'End Date',
-                          style: AppTypography.caption,
+                          style: AppTypography.captionWithColor(context),
                         ),
                       ),
                     ),
@@ -338,8 +352,8 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary500,
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: const Text('Apply Filters'),
@@ -355,22 +369,30 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Text(
           'All Entries',
-          style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.titleWithColor(
+            context,
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           onPressed: () => context.go('/home'),
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
         actions: [
           IconButton(
             onPressed: _showFiltersDialog,
-            icon: Icon(Icons.filter_list, color: AppColors.primary500),
+            icon: Icon(
+              Icons.filter_list,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
         ],
       ),
@@ -406,19 +428,19 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
               _endDate != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: AppColors.primary500.withValues(alpha: 0.1),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
               child: Row(
                 children: [
                   Icon(
                     Icons.filter_list,
                     size: 16,
-                    color: AppColors.primary500,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Filters applied',
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.primary500,
+                    style: AppTypography.captionWithColor(context).copyWith(
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -436,8 +458,8 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
                     },
                     child: Text(
                       'Clear',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.primary500,
+                      style: AppTypography.captionWithColor(context).copyWith(
+                        color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -451,9 +473,9 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
               '${_filteredEntries.length} entries found',
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.captionWithColor(
+                context,
+              ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
 
@@ -484,19 +506,21 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
 
   Widget _buildEntryItem(Map<String, dynamic> entry) {
     final isCredit = entry['type'] == 'credit';
-    final color = isCredit ? AppColors.success : AppColors.danger;
+    final color = isCredit
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.error;
     final icon = isCredit ? Icons.arrow_downward : Icons.arrow_upward;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -507,7 +531,7 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -519,16 +543,16 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
               children: [
                 Text(
                   entry['customer_name'] ?? 'Unknown Customer',
-                  style: AppTypography.body.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTypography.bodyWithColor(
+                    context,
+                  ).copyWith(fontWeight: FontWeight.w600),
                 ),
                 Row(
                   children: [
                     Text(
                       '${entry['date']} • ${entry['method']?.toString().toUpperCase()}',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.textSecondary,
+                      style: AppTypography.captionWithColor(context).copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -539,13 +563,17 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: isCredit
-                            ? AppColors.success.withValues(alpha: 0.1)
-                            : AppColors.danger.withValues(alpha: 0.1),
+                            ? Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.1)
+                            : Theme.of(
+                                context,
+                              ).colorScheme.error.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         isCredit ? 'CREDIT' : 'DEBIT',
-                        style: AppTypography.caption.copyWith(
+                        style: AppTypography.captionWithColor(context).copyWith(
                           color: color,
                           fontWeight: FontWeight.w600,
                           fontSize: 10,
@@ -558,8 +586,8 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
                     entry['note'].toString().isNotEmpty)
                   Text(
                     entry['note'],
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.textSecondary,
+                    style: AppTypography.captionWithColor(context).copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -568,10 +596,9 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
           ),
           Text(
             '${isCredit ? '+' : '-'}₹${entry['amount']?.toStringAsFixed(0) ?? '0'}',
-            style: AppTypography.body.copyWith(
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+            style: AppTypography.bodyWithColor(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),
@@ -586,17 +613,23 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
           Icon(
             Icons.search_off,
             size: 64,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurfaceVariant.withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(
             'No entries found',
-            style: AppTypography.title.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 8),
           Text(
             'Try adjusting your search or filters',
-            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodyWithColor(
+              context,
+            ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -611,6 +644,10 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
               });
               _applyFilters();
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
             child: const Text('Clear Filters'),
           ),
         ],
@@ -623,20 +660,35 @@ class _AllEntriesScreenState extends State<AllEntriesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 64, color: AppColors.danger),
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Theme.of(context).colorScheme.error,
+          ),
           const SizedBox(height: 16),
           Text(
             'Error loading entries',
-            style: AppTypography.title.copyWith(color: AppColors.danger),
+            style: AppTypography.titleWithColor(
+              context,
+            ).copyWith(color: Theme.of(context).colorScheme.error),
           ),
           const SizedBox(height: 8),
           Text(
             _error!,
-            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodyWithColor(
+              context,
+            ).copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          ElevatedButton(onPressed: _loadEntries, child: const Text('Retry')),
+          ElevatedButton(
+            onPressed: _loadEntries,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
+            child: const Text('Retry'),
+          ),
         ],
       ),
     );

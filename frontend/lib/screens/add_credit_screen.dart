@@ -88,7 +88,7 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please enter a customer name'),
-          backgroundColor: AppColors.danger,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
@@ -110,7 +110,7 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
                 content: Text(
                   createResult['message'] ?? 'Failed to create customer',
                 ),
-                backgroundColor: AppColors.danger,
+                backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
           }
@@ -141,7 +141,7 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Credit saved successfully!'),
-              backgroundColor: AppColors.success,
+              backgroundColor: Theme.of(context).colorScheme.primary,
             ),
           );
 
@@ -153,7 +153,7 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(result['message'] ?? 'Error saving credit'),
-              backgroundColor: AppColors.danger,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -163,7 +163,7 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error saving credit: $e'),
-            backgroundColor: AppColors.danger,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -177,17 +177,22 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         title: Text(
           'Add Credit',
-          style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.titleWithColor(
+            context,
+          ).copyWith(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           onPressed: () => context.go('/add'),
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
       ),
       body: Form(
@@ -201,17 +206,19 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.1),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.success.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.2),
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.arrow_downward,
-                      color: AppColors.success,
+                      color: Theme.of(context).colorScheme.primary,
                       size: 24,
                     ),
                     const SizedBox(width: 12),
@@ -221,16 +228,20 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
                         children: [
                           Text(
                             'Recording a Credit',
-                            style: AppTypography.body.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.success,
-                            ),
+                            style: AppTypography.bodyWithColor(context)
+                                .copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                           ),
                           Text(
                             'Money received from customer',
-                            style: AppTypography.caption.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                            style: AppTypography.captionWithColor(context)
+                                .copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                           ),
                         ],
                       ),
@@ -244,7 +255,9 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
               // Customer Field
               Text(
                 'Customer',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Autocomplete<String>(
@@ -378,7 +391,9 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
               // Amount Field
               Text(
                 'Amount (₹)',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -405,12 +420,16 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
               // Payment Method
               Text(
                 'Payment Method',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -423,7 +442,7 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.primary500
+                                ? Theme.of(context).colorScheme.primary
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(
                               method == _paymentMethods.first ? 12 : 0,
@@ -431,12 +450,13 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
                           ),
                           child: Text(
                             method.toUpperCase(),
-                            style: AppTypography.caption.copyWith(
-                              color: isSelected
-                                  ? Colors.white
-                                  : AppColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppTypography.captionWithColor(context)
+                                .copyWith(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.onPrimary
+                                      : Theme.of(context).colorScheme.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -451,7 +471,9 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
               // Date Field
               Text(
                 'Date',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               InkWell(
@@ -459,7 +481,9 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -468,12 +492,12 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
                       const SizedBox(width: 12),
                       Text(
                         '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                        style: AppTypography.body,
+                        style: AppTypography.bodyWithColor(context),
                       ),
                       const Spacer(),
                       Icon(
                         Icons.arrow_drop_down,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ],
                   ),
@@ -485,7 +509,9 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
               // Note Field
               Text(
                 'Note (Optional)',
-                style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                style: AppTypography.bodyWithColor(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -504,8 +530,8 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary500,
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -515,9 +541,9 @@ class _AddCreditScreenState extends State<AddCreditScreen> {
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
                           'Save Credit',
-                          style: AppTypography.body.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTypography.bodyWithColor(
+                            context,
+                          ).copyWith(fontWeight: FontWeight.w600),
                         ),
                 ),
               ),

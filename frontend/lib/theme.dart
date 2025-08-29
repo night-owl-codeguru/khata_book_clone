@@ -41,29 +41,44 @@ class AppTypography {
     fontSize: 22,
     fontWeight: FontWeight.w600,
     height: 28 / 22,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle title = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w600,
     height: 24 / 18,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle body = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 20 / 14,
-    color: AppColors.textPrimary,
   );
 
   static const TextStyle caption = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w500,
     height: 16 / 12,
-    color: AppColors.textSecondary,
   );
+
+  // Theme-aware versions that apply appropriate colors
+  static TextStyle headlineWithColor(BuildContext context) {
+    return headline.copyWith(color: Theme.of(context).colorScheme.onSurface);
+  }
+
+  static TextStyle titleWithColor(BuildContext context) {
+    return title.copyWith(color: Theme.of(context).colorScheme.onSurface);
+  }
+
+  static TextStyle bodyWithColor(BuildContext context) {
+    return body.copyWith(color: Theme.of(context).colorScheme.onSurface);
+  }
+
+  static TextStyle captionWithColor(BuildContext context) {
+    return caption.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+  }
 }
 
 class AppTheme {
@@ -145,6 +160,21 @@ class AppTheme {
         foregroundColor: AppColors.lightTextPrimary,
         elevation: 0,
         shadowColor: AppColors.lightShadow,
+      ),
+
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: AppColors.lightSurface,
+        selectedItemColor: AppColors.primary500,
+        unselectedItemColor: AppColors.lightTextSecondary,
+        selectedLabelStyle: AppTypography.caption.copyWith(
+          color: AppColors.primary500,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: AppTypography.caption.copyWith(
+          color: AppColors.lightTextSecondary,
+        ),
+        elevation: 8,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
@@ -228,6 +258,21 @@ class AppTheme {
         foregroundColor: AppColors.darkTextPrimary,
         elevation: 0,
         shadowColor: AppColors.darkShadow,
+      ),
+
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: AppColors.darkSurface,
+        selectedItemColor: AppColors.primary500,
+        unselectedItemColor: AppColors.darkTextSecondary,
+        selectedLabelStyle: AppTypography.caption.copyWith(
+          color: AppColors.primary500,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: AppTypography.caption.copyWith(
+          color: AppColors.darkTextSecondary,
+        ),
+        elevation: 8,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
