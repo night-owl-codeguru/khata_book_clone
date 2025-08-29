@@ -40,19 +40,36 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String?
-            keyPassword = keystoreProperties["keyPassword"] as String?
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as String?
+        // Check if keystore properties are properly configured
+        val isKeystoreConfigured = keystorePropertiesFile.exists() &&
+            keystoreProperties["storeFile"]?.toString()?.startsWith("YOUR_") != true &&
+            keystoreProperties["keyAlias"]?.toString()?.startsWith("YOUR_") != true
+
+        if (isKeystoreConfigured) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String?
+                keyPassword = keystoreProperties["keyPassword"] as String?
+                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+                storePassword = keystoreProperties["storePassword"] as String?
+            }
+        } else {
+            // Use debug signing when keystore is not properly configured
+            getByName("debug") {
+                // Debug signing config is automatically created by Android Gradle Plugin
+            }
         }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("release")
+            // Use release signing if configured, otherwise use debug signing
+            signingConfig = if (keystorePropertiesFile.exists() &&
+                keystoreProperties["storeFile"]?.toString()?.startsWith("YOUR_") != true &&
+                keystoreProperties["keyAlias"]?.toString()?.startsWith("YOUR_") != true) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
