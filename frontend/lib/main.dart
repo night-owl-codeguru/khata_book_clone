@@ -4,6 +4,8 @@ import 'theme.dart';
 import 'routes/app_router.dart';
 import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
+import 'providers/customer_provider.dart';
+import 'providers/reminder_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +20,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => LanguageProvider()),
+        ChangeNotifierProvider(create: (context) => CustomerProvider()),
+        ChangeNotifierProvider(create: (context) => ReminderProvider()),
       ],
       child: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, languageProvider, child) {

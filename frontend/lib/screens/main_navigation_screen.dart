@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import 'fragments/home_fragment.dart';
-import '../screens/customers_screen.dart';
-import '../screens/all_entries_screen.dart';
-import '../screens/reminders_screen.dart';
-import '../screens/reports_screen.dart';
-import '../screens/settings_screen.dart';
+import '../screens/customers_fragment.dart';
+import '../screens/all_entries_fragment.dart';
+import '../screens/reminders_fragment.dart';
+import '../screens/reports_fragment.dart';
+import '../screens/settings_fragment.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -250,53 +250,5 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       backgroundColor: Theme.of(context).colorScheme.primary,
       child: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
     );
-  }
-}
-
-// Fragment Widgets - These are simplified versions of the full screens
-// that can be embedded in the navigation container
-
-class AllEntriesFragment extends StatelessWidget {
-  const AllEntriesFragment({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const AllEntriesScreen();
-  }
-}
-
-class CustomersFragment extends StatelessWidget {
-  const CustomersFragment({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const CustomersScreen();
-  }
-}
-
-class RemindersFragment extends StatelessWidget {
-  const RemindersFragment({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const RemindersScreen();
-  }
-}
-
-class ReportsFragment extends StatelessWidget {
-  const ReportsFragment({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const ReportsScreen();
-  }
-}
-
-class SettingsFragment extends StatelessWidget {
-  const SettingsFragment({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const SettingsScreen();
   }
 }
