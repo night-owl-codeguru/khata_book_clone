@@ -1,0 +1,54 @@
+workflows:
+  android-workflow:
+    name: Android Build
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd frontend
+          flutter pub get
+      - name: Build Android APK
+        script: |
+          cd frontend
+          flutter build apk --release
+    artifacts:
+      - frontend/build/app/outputs/flutter-apk/*.apk
+
+  ios-workflow:
+    name: iOS Build
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd frontend
+          flutter pub get
+      - name: Build iOS
+        script: |
+          cd frontend
+          flutter build ios --release --no-codesign
+    artifacts:
+      - frontend/build/ios/iphoneos/*.app
+
+  web-workflow:
+    name: Web Build
+    max_build_duration: 120
+    instance_type: linux_x2
+    environment:
+      flutter: stable
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          cd frontend
+          flutter pub get
+      - name: Build Web
+        script: |
+          cd frontend
+          flutter build web --release
+    artifacts:
+      - frontend/build/web/*
