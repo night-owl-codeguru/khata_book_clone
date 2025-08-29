@@ -19,8 +19,6 @@ class CustomerService {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
-          'X-User-ID':
-              '1', // Temporary for testing - should be extracted from JWT
         },
       );
 
@@ -62,8 +60,6 @@ class CustomerService {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
-          'X-User-ID':
-              '1', // Temporary for testing - should be extracted from JWT
         },
         body: json.encode(requestBody),
       );
@@ -100,8 +96,6 @@ class CustomerService {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
-          'X-User-ID':
-              '1', // Temporary for testing - should be extracted from JWT
         },
       );
 

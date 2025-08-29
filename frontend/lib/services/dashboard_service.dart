@@ -19,8 +19,6 @@ class DashboardService {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
-          'X-User-ID':
-              '1', // Temporary for testing - should be extracted from JWT
         },
       );
 

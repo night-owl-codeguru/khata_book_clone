@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../theme.dart';
 import '../services/auth_service.dart';
+import '../providers/theme_provider.dart';
+import '../providers/language_provider.dart';
+import '../services/backup_service.dart';
+import '../services/security_service.dart';
+import '../widgets/pin_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -79,7 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader('Preferences'),
           _buildSettingItem(
             title: 'Language',
-            subtitle: 'English (India)',
+            subtitle: Provider.of<LanguageProvider>(context).getLanguageName(),
             icon: Icons.language,
             onTap: () => _showLanguageDialog(),
           ),
@@ -91,7 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           _buildSettingItem(
             title: 'Theme',
-            subtitle: 'Light',
+            subtitle: Provider.of<ThemeProvider>(context).getThemeModeName(),
             icon: Icons.palette,
             onTap: () => _showThemeDialog(),
           ),
@@ -100,26 +106,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Security Section
           _buildSectionHeader('Security'),
-          _buildSettingItem(
-            title: 'App PIN',
-            subtitle: 'Set',
-            icon: Icons.lock,
-            onTap: () => _showPinDialog(),
-          ),
-          _buildSettingItem(
-            title: 'Biometric Unlock',
-            subtitle: 'Enabled',
-            icon: Icons.fingerprint,
-            onTap: () {}, // Empty onTap since it has a switch
-            trailing: Switch(
-              value: true,
-              onChanged: (value) {
-                // TODO: Implement biometric toggle
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Biometric setting updated')),
-                );
-              },
-            ),
+          FutureBuilder<Map<String, dynamic>>(
+            future: SecurityService.getSecurityStatus(),
+            builder: (context, snapshot) {
+              final hasPin = snapshot.data?['hasPin'] ?? false;
+              final biometricEnabled =
+                  snapshot.data?['biometricEnabled'] ?? false;
+              final biometricAvailable =
+                  snapshot.data?['biometricAvailable'] ?? false;
+
+              return Column(
+                children: [
+                  _buildSettingItem(
+                    title: 'App PIN',
+                    subtitle: hasPin ? 'Change PIN' : 'Set PIN',
+                    icon: Icons.lock,
+                    onTap: () => _showPinDialog(hasPin: hasPin),
+                  ),
+                  if (biometricAvailable)
+                    _buildSettingItem(
+                      title: 'Biometric Unlock',
+                      subtitle: biometricEnabled ? 'Enabled' : 'Disabled',
+                      icon: Icons.fingerprint,
+                      onTap: () {}, // Empty onTap since it has a switch
+                      trailing: Switch(
+                        value: biometricEnabled,
+                        onChanged: (value) => _toggleBiometric(value),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
 
           const SizedBox(height: 24),
@@ -128,25 +145,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildSectionHeader('Data'),
           _buildSettingItem(
             title: 'Backup Data',
-            subtitle: 'Last backup: Never',
+            subtitle: 'Create data backup',
             icon: Icons.backup,
-            onTap: () {
-              // TODO: Implement backup functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Backup feature coming soon!')),
-              );
-            },
+            onTap: () => _createBackup(),
           ),
           _buildSettingItem(
             title: 'Restore Data',
             subtitle: 'Import from backup',
             icon: Icons.restore,
-            onTap: () {
-              // TODO: Implement restore functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Restore feature coming soon!')),
-              );
-            },
+            onTap: () => _restoreFromBackup(),
           ),
           _buildSettingItem(
             title: 'Export Data',
@@ -327,21 +334,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showLanguageDialog() {
-    final languages = ['English (India)', 'Hindi', 'Gujarati', 'Marathi'];
+    final languageProvider = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    );
+    final availableLanguages = languageProvider.getAvailableLanguages();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
           title: const Text('Select Language'),
-          children: languages.map((language) {
+          children: availableLanguages.map((language) {
+            final isSelected =
+                languageProvider.locale.languageCode == language['code'];
             return SimpleDialogOption(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Language changed to $language')),
-                );
+                await languageProvider.setLanguage(language['code']!);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Language changed to ${language['name']}'),
+                    ),
+                  );
+                }
               },
-              child: Text(language),
+              child: Row(
+                children: [
+                  Text(language['name']!),
+                  if (isSelected) ...[
+                    const SizedBox(width: 8),
+                    Icon(Icons.check, color: AppColors.primary500, size: 20),
+                  ],
+                ],
+              ),
             );
           }).toList(),
         );
@@ -373,42 +400,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showThemeDialog() {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final themes = ['Light', 'Dark', 'System'];
+    final themeModes = [ThemeMode.light, ThemeMode.dark, ThemeMode.system];
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
           title: const Text('Select Theme'),
-          children: themes.map((theme) {
+          children: List.generate(themes.length, (index) {
+            final theme = themes[index];
+            final mode = themeModes[index];
+            final isSelected = themeProvider.themeMode == mode;
+
             return SimpleDialogOption(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Theme changed to $theme')),
-                );
+                await themeProvider.setThemeMode(mode);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Theme changed to $theme')),
+                  );
+                }
               },
-              child: Text(theme),
+              child: Row(
+                children: [
+                  Text(theme),
+                  if (isSelected) ...[
+                    const SizedBox(width: 8),
+                    Icon(Icons.check, color: AppColors.primary500, size: 20),
+                  ],
+                ],
+              ),
             );
-          }).toList(),
+          }),
         );
       },
     );
   }
 
-  void _showPinDialog() {
-    // TODO: Implement PIN setting dialog
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('PIN setting coming soon!')));
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateString;
+    }
   }
 
-  void _showAboutDialog() {
-    showAboutDialog(
-      context: context,
-      applicationName: 'LedgerBook',
-      applicationVersion: '1.0.0',
-      applicationLegalese: '© 2024 LedgerBook',
-    );
+  String _formatFileSize(String sizeString) {
+    try {
+      final size = int.parse(sizeString);
+      if (size < 1024) {
+        return '$size B';
+      } else if (size < 1024 * 1024) {
+        return '${(size / 1024).toStringAsFixed(1)} KB';
+      } else {
+        return '${(size / (1024 * 1024)).toStringAsFixed(1)} MB';
+      }
+    } catch (e) {
+      return sizeString;
+    }
   }
 
   void _showLogoutDialog() {
@@ -424,12 +477,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () async {
+              onPressed: () {
                 Navigator.of(context).pop();
-                await AuthService.logout();
-                if (mounted) {
-                  context.go('/splash');
-                }
+                // TODO: Implement logout functionality
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Logout functionality coming soon!'),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.danger,
@@ -441,5 +496,490 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       },
     );
+  }
+
+  void _showPinDialog({bool hasPin = false}) async {
+    if (hasPin) {
+      // Change PIN - first verify current PIN
+      final currentPin = await PinDialog.show(
+        context,
+        title: 'Enter Current PIN',
+        subtitle: 'Enter your current PIN to proceed',
+      );
+
+      if (currentPin != null) {
+        // Now set new PIN
+        final newPin = await PinDialog.show(
+          context,
+          title: 'Set New PIN',
+          subtitle: 'Enter your new PIN',
+          isSettingPin: true,
+        );
+
+        if (newPin != null) {
+          try {
+            await SecurityService.changePin(currentPin, newPin);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('PIN changed successfully')),
+              );
+              setState(() {}); // Refresh the UI
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to change PIN: $e')),
+              );
+            }
+          }
+        }
+      }
+    } else {
+      // Set new PIN
+      final pin = await PinDialog.show(
+        context,
+        title: 'Set PIN',
+        subtitle: 'Create a 4-6 digit PIN to secure your app',
+        isSettingPin: true,
+      );
+
+      if (pin != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('PIN set successfully')));
+          setState(() {}); // Refresh the UI
+        }
+      }
+    }
+  }
+
+  void _showAboutDialog() {
+    showAboutDialog(
+      context: context,
+      applicationName: 'LedgerBook',
+      applicationVersion: '1.0.0',
+      applicationLegalese: '© 2024 LedgerBook',
+    );
+  }
+
+  void _createBackup() async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Creating backup...'),
+            ],
+          ),
+        ),
+      );
+
+      final filePath = await BackupService.createBackup();
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Show success dialog with options
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Backup Complete'),
+            content: Text(
+              'Backup created successfully: ${filePath.split('/').last}',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  try {
+                    await BackupService.shareBackup(filePath);
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to share backup: $e')),
+                      );
+                    }
+                  }
+                },
+                child: const Text('Share'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if open
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Backup failed: $e')));
+      }
+    }
+  }
+
+  void _restoreFromBackup() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Restore from Backup',
+              style: AppTypography.title.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Choose a backup file to restore',
+              style: AppTypography.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: BackupService.getBackupHistory(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Error loading backups: ${snapshot.error}',
+                        style: AppTypography.body.copyWith(
+                          color: AppColors.danger,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final backups = snapshot.data ?? [];
+
+                  if (backups.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.backup,
+                            size: 64,
+                            color: AppColors.textSecondary.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No backups found',
+                            style: AppTypography.title.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Create a backup first to see it here',
+                            style: AppTypography.body.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: backups.length,
+                    itemBuilder: (context, index) {
+                      final backup = backups[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary500.withValues(
+                                  alpha: 0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.backup,
+                                color: AppColors.primary500,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    backup['fileName'],
+                                    style: AppTypography.body.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Created: ${_formatDate(backup['timestamp'])}',
+                                    style: AppTypography.caption.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Size: ${_formatFileSize(backup['size'])}',
+                                    style: AppTypography.caption.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              onSelected: (value) async {
+                                if (value == 'restore') {
+                                  await _performRestore(backup['filePath']);
+                                } else if (value == 'share') {
+                                  try {
+                                    await BackupService.shareBackup(
+                                      backup['filePath'],
+                                    );
+                                  } catch (e) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Failed to share: $e'),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                } else if (value == 'delete') {
+                                  await _deleteBackup(backup['filePath']);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'restore',
+                                  child: Text('Restore'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'share',
+                                  child: Text('Share'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text('Delete'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _performRestore(String filePath) async {
+    try {
+      // Show confirmation dialog
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Confirm Restore'),
+          content: const Text(
+            'This will replace all current data with the backup. This action cannot be undone. Continue?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.danger,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Restore'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true) return;
+
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Restoring backup...'),
+            ],
+          ),
+        ),
+      );
+
+      await BackupService.restoreFromBackup(filePath);
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Backup restored successfully')),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if open
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Restore failed: $e')));
+      }
+    }
+  }
+
+  Future<void> _deleteBackup(String filePath) async {
+    try {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Delete Backup'),
+          content: const Text(
+            'Are you sure you want to delete this backup file?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.danger,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        await BackupService.deleteBackup(filePath);
+        setState(() {}); // Refresh the backup list
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Backup deleted successfully')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete backup: $e')));
+      }
+    }
+  }
+
+  void _toggleBiometric(bool enabled) async {
+    try {
+      if (enabled) {
+        // Check if biometric is available
+        final available = await SecurityService.isBiometricAvailable();
+        if (!available) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Biometric authentication not available on this device',
+                ),
+              ),
+            );
+          }
+          return;
+        }
+
+        // Try to authenticate before enabling
+        final authenticated = await SecurityService.authenticateWithBiometrics(
+          reason: 'Authenticate to enable biometric unlock',
+        );
+
+        if (authenticated) {
+          await SecurityService.setBiometricEnabled(true);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Biometric unlock enabled')),
+            );
+            setState(() {}); // Refresh the UI
+          }
+        }
+      } else {
+        await SecurityService.setBiometricEnabled(false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Biometric unlock disabled')),
+          );
+          setState(() {}); // Refresh the UI
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update biometric setting: $e')),
+        );
+      }
+    }
   }
 }

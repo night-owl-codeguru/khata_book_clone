@@ -271,14 +271,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
       ),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to customer detail screen
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Customer detail for ${customer['name']} - Coming soon!',
-              ),
-            ),
-          );
+          // Navigate to customer detail screen
+          context.go('/customer/${customer['id']}');
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

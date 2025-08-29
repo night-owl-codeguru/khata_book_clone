@@ -253,6 +253,58 @@ class AuthService {
     }
   }
 
+  // Update user profile
+  static Future<Map<String, dynamic>> updateProfile({
+    String? name,
+    String? phone,
+    String? address,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'message': 'No authentication token found'};
+      }
+
+      final requestBody = {};
+      if (name != null && name.isNotEmpty) requestBody['name'] = name;
+      if (phone != null && phone.isNotEmpty) requestBody['phone'] = phone;
+      if (address != null && address.isNotEmpty)
+        requestBody['address'] = address;
+
+      if (requestBody.isEmpty) {
+        return {'success': false, 'message': 'No fields to update'};
+      }
+
+      final response = await http.put(
+        Uri.parse('$_baseUrl/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(requestBody),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['success']) {
+        // Update stored user data with fresh data from server
+        await setUserData(data['user']);
+        return {
+          'success': true,
+          'message': data['message'],
+          'user': data['user'],
+        };
+      } else {
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Failed to update profile',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    }
+  }
+
   // Logout user
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();

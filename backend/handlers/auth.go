@@ -313,3 +313,129 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{"success": true, "user": user})
 }
+
+func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	// Get token from Authorization header
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" || len(authHeader) < 7 || authHeader[:7] != "Bearer " {
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{"success": false, "error": "unauthorized", "message": "Authorization token required"})
+		return
+	}
+
+	tokenString := authHeader[7:]
+
+	// Parse and validate token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+
+	if err != nil || !token.Valid {
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{"success": false, "error": "invalid_token", "message": "Invalid or expired token"})
+		return
+	}
+
+	// Get claims
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{"success": false, "error": "invalid_token", "message": "Invalid token claims"})
+		return
+	}
+
+	userID := int(claims["user_id"].(float64))
+
+	var updateReq models.UserRequest
+	err = json.NewDecoder(r.Body).Decode(&updateReq)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "invalid_request", "message": "Invalid request body"})
+		return
+	}
+
+	// Validate phone format if provided
+	if updateReq.Phone != "" {
+		phoneRegex := regexp.MustCompile(`^[0-9+()\-\s]{6,20}$`)
+		if !phoneRegex.MatchString(updateReq.Phone) {
+			writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "invalid_phone", "message": "Invalid phone number"})
+			return
+		}
+
+		// Check if phone is already used by another user
+		var existingID int
+		err = database.DB.QueryRow(`SELECT id FROM users WHERE phone = ? AND id != ? LIMIT 1`, updateReq.Phone, userID).Scan(&existingID)
+		if err == nil {
+			logger.L.WithField("phone", updateReq.Phone).Warn("Phone number already exists for another user")
+			writeJSON(w, http.StatusConflict, map[string]interface{}{"success": false, "error": "phone_exists", "message": "Phone number already registered"})
+			return
+		} else if err != sql.ErrNoRows {
+			logger.L.WithField("error", err).Error("Database error checking existing phone")
+			writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not process request"})
+			return
+		}
+	}
+
+	// Build update query dynamically
+	setParts := []string{}
+	args := []interface{}{}
+
+	if updateReq.Name != "" {
+		setParts = append(setParts, "name = ?")
+		args = append(args, updateReq.Name)
+	}
+
+	if updateReq.Phone != "" {
+		setParts = append(setParts, "phone = ?")
+		args = append(args, updateReq.Phone)
+	}
+
+	if updateReq.Address != "" {
+		setParts = append(setParts, "address = ?")
+		args = append(args, updateReq.Address)
+	}
+
+	if len(setParts) == 0 {
+		writeJSON(w, http.StatusBadRequest, map[string]interface{}{"success": false, "error": "no_updates", "message": "No valid fields to update"})
+		return
+	}
+
+	setParts = append(setParts, "updated_at = CURRENT_TIMESTAMP")
+	query := "UPDATE users SET " + strings.Join(setParts, ", ") + " WHERE id = ?"
+	args = append(args, userID)
+
+	_, err = database.DB.Exec(query, args...)
+	if err != nil {
+		logger.L.WithField("error", err).Error("Error updating user profile")
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not update profile"})
+		return
+	}
+
+	// Get updated user data
+	var user models.User
+	var createdAtStr string
+	err = database.DB.QueryRow(`
+		SELECT id, name, phone, email, address, created_at 
+		FROM users 
+		WHERE id = ?
+	`, userID).Scan(&user.ID, &user.Name, &user.Phone, &user.Email, &user.Address, &createdAtStr)
+	if err != nil {
+		logger.L.WithField("error", err).Error("Error getting updated user profile")
+		writeJSON(w, http.StatusInternalServerError, map[string]interface{}{"success": false, "error": "server_error", "message": "Could not retrieve updated profile"})
+		return
+	}
+
+	// Parse created_at timestamp
+	user.CreatedAt, err = time.Parse("2006-01-02 15:04:05", createdAtStr)
+	if err != nil {
+		logger.L.WithField("error", err).Warn("Error parsing created_at for updated profile; using now as fallback")
+		user.CreatedAt = time.Now()
+	}
+
+	// Remove password hash from response
+	user.PasswordHash = ""
+
+	logger.L.WithField("user_id", userID).Info("User profile updated successfully")
+
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"message": "Profile updated successfully",
+		"user":    user,
+	})
+}

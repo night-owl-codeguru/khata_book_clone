@@ -34,17 +34,24 @@ func main() {
 	r.HandleFunc("/api/login", handlers.Login).Methods("POST")
 	r.HandleFunc("/api/health", handlers.HealthCheck).Methods("GET")
 	r.HandleFunc("/api/profile", handlers.GetProfile).Methods("GET")
+	r.HandleFunc("/api/profile", handlers.UpdateProfile).Methods("PUT")
 	r.HandleFunc("/api/dashboard", handlers.GetDashboardSummary).Methods("GET")
+
+	// Report routes
+	r.HandleFunc("/api/reports/monthly", handlers.GetMonthlyReports).Methods("GET")
+	r.HandleFunc("/api/reports/categories", handlers.GetCategoryReports).Methods("GET")
+	r.HandleFunc("/api/reports/payment-methods", handlers.GetPaymentMethodReports).Methods("GET")
 
 	// Customer routes
 	r.HandleFunc("/api/customers", handlers.GetCustomers).Methods("GET")
 	r.HandleFunc("/api/customers", handlers.CreateCustomer).Methods("POST")
 	r.HandleFunc("/api/customers/{id}", handlers.GetCustomer).Methods("GET")
 
-	// Ledger entry routes
-	r.HandleFunc("/api/ledger", handlers.CreateLedgerEntry).Methods("POST")
-	r.HandleFunc("/api/ledger", handlers.GetLedgerEntries).Methods("GET")
-	r.HandleFunc("/api/ledger/{id}", handlers.GetLedgerEntry).Methods("GET")
+	// Reminder routes
+	r.HandleFunc("/api/reminders", handlers.GetReminders).Methods("GET")
+	r.HandleFunc("/api/reminders", handlers.CreateReminder).Methods("POST")
+	r.HandleFunc("/api/reminders/{id}", handlers.UpdateReminder).Methods("PUT")
+	r.HandleFunc("/api/reminders/{id}", handlers.DeleteReminder).Methods("DELETE")
 
 	// Catch-all OPTIONS handler for CORS preflight requests
 	r.PathPrefix("/").Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
